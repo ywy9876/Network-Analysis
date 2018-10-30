@@ -2,8 +2,7 @@
 #include <string>
 #include <vector>
 #include <queue>
-#include <map> 
-//#include <set> 
+#include <map>
 #include <iterator> 
 #include <dirent.h>
 #include <cstring>
@@ -11,6 +10,7 @@
 #include <fstream>
 #include <sstream>
 #include <algorithm>
+#include <random>
 //#include <utility> 
 using namespace std;
 
@@ -32,6 +32,7 @@ typedef map<string, Node > Graph; // unweighted graph
 typedef vector <pair<string, string> > Edges; // stores all the edges
  
 const int infinit = 100000000;
+const unsigned seed = 1234567;
 
 vector <string> get_directory_files(const string& dir) {
 	struct dirent *dirent_ptr;
@@ -51,6 +52,49 @@ vector <string> get_directory_files(const string& dir) {
 	return files;
 }
 
+void create_ER(map<int, string>& indexNode, const int n, const int m) {
+	default_random_engine gen (seed);
+	// a random number between 0 and number of nodes -1 because of the index of vector, no matter the value
+	uniform_int_distribution<int> dist(0, n-1);
+	Graph G_ER;
+	//Edges E_ER;
+	map <string, char> E_ER; // key composed by origin+destination words
+	int edgesCreated = 0;
+	while (edgesCreated < m) {
+		int originIndex = dist(gen);
+		int destinationIndex = dist(gen);
+		// cannot have loop
+		if (originIndex != destinationIndex) {
+			string origin = indexNode[originIndex]; 
+			string destination = indexNode[destinationIndex];
+			bool valid = true;
+			map <string, char>::iterator it;
+			it = E_ER.find(origin+destination);
+			if (it != E_ER.end()) continue;
+			it = E_ER.find(destination+origin);
+			if (it != E_ER.end()) continue;
+			// we know that it's not a loop nor multiedge
+			if (valid) {
+				G_ER[origin].neighbours.push_back(destination); // add b to adjacency list
+				G_ER[destination].neighbours.push_back(origin);
+				E_ER[origin+destination] = '1';
+				E_ER[destination+origin] = '1';
+				//E_ER.push_back(make_pair(origin, destination)); // add to the edges vector	
+				++edgesCreated;
+			}
+		}
+	}
+	cout << "Print G" << endl;
+	for (auto itr = G_ER.begin(); itr != G_ER.end(); ++itr) { 
+		cout << itr->first << ": ";  
+		for (string neighbour : itr->second.neighbours)
+			cout << neighbour << '\t'; 
+		cout << endl;
+	} 
+	cout << "m: " << edgesCreated << endl;
+}
+
+	
 void create_graph(const string file_name) throw() {
 	try {
 		string line;
@@ -81,7 +125,7 @@ void create_graph(const string file_name) throw() {
 						it = G.find(a);
 						// if the dictionary already contains word a
 						if (it != G.end()) {
-							if (find(G[a].neighbours.begin(), G[a].neighbours.end(), b) == G[a].neighbours.end()) {
+							if (find((it->second).neighbours.begin(), (it->second).neighbours.end(), b) == (it->second).neighbours.end()) {
 								G[a].neighbours.push_back(b); // add b to adjacency list
 								E.push_back(make_pair(a, b)); // add to the edges vector
 								++m;
@@ -128,6 +172,7 @@ void create_graph(const string file_name) throw() {
 				else firstLine = false;
 			}
 			myfile.close();
+			create_ER(indexNode, n, m);
 			/*
 			cout << "Print G" << endl;
 			for (auto itr = G.begin(); itr != G.end(); ++itr) 
