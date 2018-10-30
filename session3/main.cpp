@@ -93,6 +93,7 @@ void create_graph(const string file_name) throw() {
 							E.push_back(make_pair(a, b));
 							Nodes.push_back(a);
 							nodeIndex[a] = n;
+							indexNode[n] = a;
 							++n;
 							++m;								
 						}
@@ -106,6 +107,7 @@ void create_graph(const string file_name) throw() {
 							G[b] = auxN; 
 							Nodes.push_back(b);
 							nodeIndex[b] = n;
+							indexNode[n] = b;
 							++n;
 							//++m; 
 						}
@@ -121,12 +123,12 @@ void create_graph(const string file_name) throw() {
 						
 						*/
 					}
-					//else ++sameNode;
+					else ++sameNode;
 				}
 				else firstLine = false;
 			}
 			myfile.close();
-			
+			/*
 			cout << "Print G" << endl;
 			for (auto itr = G.begin(); itr != G.end(); ++itr) 
 			{ 
@@ -144,8 +146,12 @@ void create_graph(const string file_name) throw() {
 			cout << "Print nodeIndex" << endl;
 			for (auto itr = nodeIndex.begin(); itr != nodeIndex.end(); ++itr) 
 				cout << itr->first << "\t" << itr->second << endl;
+			cout << "Print indexNode" << endl;
+			for (auto itr = indexNode.begin(); itr != indexNode.end(); ++itr) 
+				cout << itr->first << "\t" << itr->second << endl;
 			cout << "n: " << n << ", m: " << m << " , " << sameNode <<endl; 
 			cout << G.size() << ", " << E.size() << endl;
+			*/
 		}
 		else cout << "Could not open the file, please check the path name"; 
 	}
