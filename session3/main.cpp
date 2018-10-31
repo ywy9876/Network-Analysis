@@ -210,7 +210,7 @@ void create_graph(const string file_name) throw() {
 void calculate_closeness() {
 	
 
-	cout << "hello" << endl;
+	cout << "bye" << endl;
 
 }
 
