@@ -11,6 +11,7 @@
 #include <sstream>
 #include <algorithm>
 #include <random>
+#include <time.h>
 //#include <utility> 
 using namespace std;
 
@@ -325,8 +326,9 @@ int main() {
 	cout << "Real graph" << endl;
 	printCreatedGraph( G, E, Nodes, nodeIndex, indexNode,n, m, 0);
 
+	clock_t tStart = clock();
 	calculate_closeness(G,E,Nodes,nodeIndex, indexNode,n,m);
-
+	printf("Time taken: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 
     int  c;
 	string u, v, x, y;
