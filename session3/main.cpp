@@ -271,15 +271,15 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 	 */
 
 	double C = 0;
+	int count = 0;
 	cout << "Closeness centrality: " << endl;
-	omp_set_num_threads (8) ;
-	#pragma omp parallel for reduction (+: C) 
+	omp_set_num_threads(omp_get_max_threads()) ;
+	#pragma omp parallel for reduction (+: C, count) 
 	for (int idx = 0; idx < Nodes.size(); ++idx){
-		cout << "thread " << omp_get_thread_num() << " calculating for node " << Nodes[idx] << " iteration " << idx << endl;
+		//cout << "thread " << omp_get_thread_num() << " calculating for node " << Nodes[idx] << " iteration " << idx << endl;
 		//cout << " node " << node << endl;
 		//if (nodeIndex[node] % 1000 == 0 )
-
-
+	
 		// compute all dij
 		vector<double>& d = G[Nodes[idx]].distances;
 
@@ -300,7 +300,10 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 		// update C
 		C += Ci;
 		//cout << "update C=" << C << endl;
-
+		count += 1;
+		if (0 == omp_get_thread_num())
+			//if (count %% 1000 == 0)
+			cout << count << endl;
 
 	}
 	// finally set C
