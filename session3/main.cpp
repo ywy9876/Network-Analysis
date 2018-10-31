@@ -350,6 +350,7 @@ int main() {
 					++cont;
 				}
 	            G[u].neighbours.push_back(v);
+				G[v].neighbours.push_back(u);
 	        }
 			vector<double> d;
 			//vector<int> p;
@@ -364,3 +365,4 @@ int main() {
 	    }
 
 }
+
