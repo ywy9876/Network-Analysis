@@ -12,7 +12,9 @@
 #include <algorithm>
 #include <random>
 #include <time.h>
-//#include <utility> 
+#include <omp.h>
+//#include <utility>
+ 
 using namespace std;
 
 
@@ -270,33 +272,33 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 
 	double C = 0;
 	cout << "Closeness centrality: " << endl;
-
-	for (auto node: Nodes){
+	omp_set_num_threads (8) ;
+	#pragma omp parallel for reduction (+: C) 
+	for (int idx = 0; idx < Nodes.size(); ++idx){
+		cout << "thread " << omp_get_thread_num() << " calculating for node " << Nodes[idx] << " iteration " << idx << endl;
 		//cout << " node " << node << endl;
-		if (nodeIndex[node] % 1000 == 0 )
-			cout << nodeIndex[node] << endl;
+		//if (nodeIndex[node] % 1000 == 0 )
+
 
 		// compute all dij
-		vector<double> d;
-		vector<int> p;
+		vector<double>& d = G[Nodes[idx]].distances;
 
 		//cout << " node of which we compute dij's:  " <<  nodeIndex[node] << endl;
-		dijkstra(G, nodeIndex[node], d, nodeIndex, indexNode, n);
+		dijkstra(G, idx, d, nodeIndex, indexNode, n);
 
 		// compute Ci
 		double Ci = 0;
-		//cout << " dij's :";
-		for (int i =0; i< d.size() ; i++){
-			if ( i ==  nodeIndex[node]) continue;
-			//cout << " index node " << indexNode[i]  << " " << d[i] << endl;
+		for ( int i = 0; i < d.size() ; i++){
+			if (i ==  idx) continue;
+			//cout << indexNode[idx] << " -> " << indexNode[i]  << " " << d[i] << endl;
 			double invdij = 1.0/double(d[i]);
-			Ci+=invdij;
+			Ci += invdij;
 		}
 		Ci = Ci /(n - 1);
 		//cout << "Ci=" << Ci << endl;
 
 		// update C
-		C+=Ci;
+		C += Ci;
 		//cout << "update C=" << C << endl;
 
 
@@ -331,45 +333,43 @@ int main() {
 
 	clock_t tStart = clock();
 	calculate_closeness(G,E,Nodes,nodeIndex, indexNode,n,m);
-	printf("Time taken: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
-
+	cout << "Time spent in calculating closeness: " << (double)(clock() - tStart)/CLOCKS_PER_SEC << "s" << endl;
+	/*
     int  c;
 	string u, v, x, y;
-	
-
-	   while (cin >> n >> m) {
-	        Graph G;
-			map<string, int> nodeIndex;
-			map<int, string> indexNode;
-			int cont = 0;
-	        for (int i = 0; i < m; ++i) {
-	            cin >> u >> v >> c;
-				auto it = nodeIndex.find(u);
-				if (it == nodeIndex.end()) {
-					nodeIndex[u] = cont;
-					indexNode[cont] = u;
-					++cont;
-				}
-				it = nodeIndex.find(v);
-				if (it == nodeIndex.end()) {
-					nodeIndex[v] = cont;
-					indexNode[cont] = v;
-					++cont;
-				}
-	            G[u].neighbours.push_back(v);
-				G[v].neighbours.push_back(u);
-	        }
-			vector<double> d;
-			//vector<int> p;
-	        cin >> x >> y;
-	        dijkstra(G, nodeIndex[x], d, nodeIndex, indexNode, n);
-			cout << x << "\n";
-			for (unsigned int j = 0; j < d.size(); ++j) {
-
-				cout << "node " << indexNode[j] << " and cost " << d[j] << "\n";
+		while (cin >> n >> m) {
+		Graph G;
+		map<string, int> nodeIndex;
+		map<int, string> indexNode;
+		int cont = 0;
+		for (int i = 0; i < m; ++i) {
+			cin >> u >> v >> c;
+			auto it = nodeIndex.find(u);
+			if (it == nodeIndex.end()) {
+				nodeIndex[u] = cont;
+				indexNode[cont] = u;
+				++cont;
 			}
-			cout << "\n";
-	    }
+			it = nodeIndex.find(v);
+			if (it == nodeIndex.end()) {
+				nodeIndex[v] = cont;
+				indexNode[cont] = v;
+				++cont;
+			}
+			G[u].neighbours.push_back(v);
+			G[v].neighbours.push_back(u);
+		}
+		vector<double> d;
+		//vector<int> p;
+		cin >> x >> y;
+		dijkstra(G, nodeIndex[x], d, nodeIndex, indexNode, n);
+		cout << x << "\n";
+		for (unsigned int j = 0; j < d.size(); ++j) {
 
+			cout << "node " << indexNode[j] << " and cost " << d[j] << "\n";
+		}
+		cout << "\n";
+	}
+	*/
 }
 
