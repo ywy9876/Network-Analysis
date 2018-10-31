@@ -95,7 +95,13 @@ void create_ER(map<int, string>& indexNode, const int n, const int m) {
 }
 
 	
-void create_graph(const string file_name) throw() {
+void create_graph(const string file_name,
+		Graph& G,
+		Edges& E,
+		vector<string>& Nodes,
+		map<string, int>& nodeIndex,
+		map<int, string>& indexNode,
+		int& n, int& m) throw() {
 	try {
 		string line;
 		ifstream myfile(file_name);
@@ -103,21 +109,21 @@ void create_graph(const string file_name) throw() {
 			// initializing the needed variables
 			bool firstLine = true;
 			int sameNode = 0;
-			int n = 0;
-			int m = 0; // n for number of nodes, m for number of edges
-			Graph G; // a dictionary which the key is the name of node (e.g a word) and the value is a adjacency list [b, c, etc.]  
-			Edges E; // all the edges
-			vector <string> Nodes; // stores the words in the order of incoming
-			map<string, int> nodeIndex; // stores the correspondences between words and indices
-			map<int, string> indexNode; // stores the correspondences between indices and words
-			
+			n = 0;
+			m = 0; // n for number of nodes, m for number of edges
+//			Graph G; // a dictionary which the key is the name of node (e.g a word) and the value is a adjacency list [b, c, etc.]
+//			Edges E; // all the edges
+//			vector <string> Nodes; // stores the words in the order of incoming
+//			map<string, int> nodeIndex; // stores the correspondences between words and indices
+//			map<int, string> indexNode; // stores the correspondences between indices and words
+
 			// read all lines of the file
 			while (getline(myfile, line)) {
 				if (!firstLine) {
 					istringstream iss(line);
 					string a, b;
 					// if the line contains only two elements
-					if (!(iss >> a >> b)) throw "Not exact two elements in one line"; 
+					if (!(iss >> a >> b)) throw "Not exact two elements in one line";
 					// avoiding loop
 					if (a != b) {
 						//cout << a << " " << b << endl;
@@ -139,21 +145,21 @@ void create_graph(const string file_name) throw() {
 							nodeIndex[a] = n;
 							indexNode[n] = a;
 							++n;
-							++m;								
+							++m;
 						}
-						
+
 						it = G.find(b);
 						if (it == G.end()) {
 							// since word b does not present in the dictionary, we add it with the edge
 							//G[b].neighbours.push_back(a);
 							//E.push_back(make_pair(b, a));
 							Node auxN;
-							G[b] = auxN; 
+							G[b] = auxN;
 							Nodes.push_back(b);
 							nodeIndex[b] = n;
 							indexNode[n] = b;
 							++n;
-							//++m; 
+							//++m;
 						}
 						// if the dictionary already contains word b
 						/*
@@ -161,10 +167,10 @@ void create_graph(const string file_name) throw() {
 							if (find(G[b].neighbours.begin(), G[b].neighbours.end(), a) == G[b].neighbours.end()) {
 								G[b].neighbours.push_back(a);
 								E.push_back(make_pair(b, a));
-								++m; 
+								++m;
 							}
 						}
-						
+
 						*/
 					}
 					else ++sameNode;
@@ -173,37 +179,49 @@ void create_graph(const string file_name) throw() {
 			}
 			myfile.close();
 			create_ER(indexNode, n, m);
-			/*
-			cout << "Print G" << endl;
-			for (auto itr = G.begin(); itr != G.end(); ++itr) 
-			{ 
-				cout << itr->first << ": ";  
-				for (string neighbour : itr->second.neighbours)
-					cout << neighbour << '\t'; 
-				cout << endl;
-			} 
-			cout << "Print E" << endl;
-			for (auto p : E) 
-				cout << p.first << '\t' << p.second << endl; 
-			cout << "Print Nodes" << endl;
-			for (auto node : Nodes) 
-				cout << node << endl; 
-			cout << "Print nodeIndex" << endl;
-			for (auto itr = nodeIndex.begin(); itr != nodeIndex.end(); ++itr) 
-				cout << itr->first << "\t" << itr->second << endl;
-			cout << "Print indexNode" << endl;
-			for (auto itr = indexNode.begin(); itr != indexNode.end(); ++itr) 
-				cout << itr->first << "\t" << itr->second << endl;
-			cout << "n: " << n << ", m: " << m << " , " << sameNode <<endl; 
-			cout << G.size() << ", " << E.size() << endl;
-			*/
+			// printCreatedGraph(G,E,Nodes, indexNode, nodeIndex, sameNode);
+
 		}
-		else cout << "Could not open the file, please check the path name"; 
+		else cout << "Could not open the file, please check the path name";
+
+
 	}
 	catch (const char* msg) {
 		cout << msg << endl;
 		exit(1);
 	}
+}
+
+void printCreatedGraph(Graph& G,
+		Edges& E,
+		vector<string>& Nodes,
+		map<string, int>& nodeIndex,
+		map<int, string>& indexNode,
+		int n, int m, int sameNode){
+
+	cout << "Print G" << endl;
+	for (auto itr = G.begin(); itr != G.end(); ++itr)
+	{
+		cout << itr->first << ": ";
+		for (string neighbour : itr->second.neighbours)
+			cout << neighbour << '\t';
+		cout << endl;
+	}
+	cout << "Print E" << endl;
+	for (auto p : E)
+		cout << p.first << '\t' << p.second << endl;
+	cout << "Print Nodes" << endl;
+	for (auto node : Nodes)
+		cout << node << endl;
+	cout << "Print nodeIndex" << endl;
+	for (auto itr = nodeIndex.begin(); itr != nodeIndex.end(); ++itr)
+		cout << itr->first << "\t" << itr->second << endl;
+	cout << "Print indexNode" << endl;
+	for (auto itr = indexNode.begin(); itr != indexNode.end(); ++itr)
+		cout << itr->first << "\t" << itr->second << endl;
+	cout << "n: " << n << ", m: " << m << " , " << sameNode << endl;
+	cout << G.size() << ", " << E.size() << endl;
+
 }
 
 
@@ -215,9 +233,7 @@ void calculate_distance(const WGraph& G, int s, vector<double>& d, vector<int>& 
 
 
 
-void dijkstra(const Graph& G, int s, vector<double>& d, vector<int>& p, int n) {
-
-
+void dijkstra(const Graph& G, int s, vector<double>& d, map<string, int> nodeIndex, map<int, string> indexNode, int n) {
 	d = vector<double>(n, infinit); d[s] = 0;
 	vector<bool> S(n, false);
 	priority_queue<WArc, vector<WArc>, greater<WArc> > Q;
@@ -255,86 +271,100 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 	 *
 	 */
 
-	int C = 0;
-	cout << "Printing Nodes: " << endl;
+	double C = 0;
+	cout << "Closeness centrality: " << endl;
 	for (auto node: Nodes){
-		cout << " node " << node << endl;
+		//cout << " node " << node << endl;
 
 		// compute all dij
 		vector<double> d;
 		vector<int> p;
-		dijkstra(G, node, d, p, n);
+
+		dijkstra(G, nodeIndex[node], d, nodeIndex, indexNode, n);
 
 		// compute Ci
 		double Ci = 0;
-		cout << " dij's :"<< endl;
-		for (int i =0; i<d.size(); i++){
-			cout << d[i] << endl;
+		//cout << " dij's :"<< endl;
+		for (int i =0; i< d.size() && i !=  nodeIndex[node]; i++){
+			//cout << d[i] << endl;
 			double invdij = 1.0/double(d[i]);
 			Ci+=invdij;
 		}
 		Ci = Ci /(n - 1);
+		//cout << "Ci=" << Ci << endl;
 
 		// update C
 		C+=Ci;
+		//cout << "update C=" << C << endl;
 
 
 	}
 	// finally set C
 	C = C / n;
 
+	cout << "closeness centrality CWS: " << endl;
+	cout << C << endl;
+
 }
 
 
 int main() {
+
+	Graph G; // a dictionary which the key is the name of node (e.g a word) and the value is a adjacency list [b, c, etc.]
+	Edges E; // all the edges
+	vector <string> Nodes; // stores the words in the order of incoming
+	map<string, int> nodeIndex; // stores the correspondences between words and indices
+	map<int, string> indexNode; // stores the correspondences between indices and words
+	int n, m;
+
 	const auto& directory_path = string("./data/");
 	const auto& files = get_directory_files(directory_path);
 	for (const auto& file : files) {
 		cout << directory_path+file << endl;
-		create_graph(directory_path+file);
+		create_graph(directory_path+file,G,E,Nodes,nodeIndex,indexNode,n,m);
 	}
 
 
-	//printCreatedGraph( G, E, Nodes, nodeIndex, indexNode,n, m, 0);
+	printCreatedGraph( G, E, Nodes, nodeIndex, indexNode,n, m, 0);
 
 	calculate_closeness(G,E,Nodes,nodeIndex, indexNode,n,m);
 
 
-    int n, m, c;
+    int  c;
 	string u, v, x, y;
 	
 
-    while (cin >> n >> m) {
-        Graph G;
-		map<string, int> nodeIndex;
-		map<int, string> indexNode;
-		int cont = 0;
-        for (int i = 0; i < m; ++i) {
-            cin >> u >> v >> c;
-			auto it = nodeIndex.find(u);
-			if (it == nodeIndex.end()) {
-				nodeIndex[u] = cont;
-				indexNode[cont] = u;
-				++cont;
+	   while (cin >> n >> m) {
+	        Graph G;
+			map<string, int> nodeIndex;
+			map<int, string> indexNode;
+			int cont = 0;
+	        for (int i = 0; i < m; ++i) {
+	            cin >> u >> v >> c;
+				auto it = nodeIndex.find(u);
+				if (it == nodeIndex.end()) {
+					nodeIndex[u] = cont;
+					indexNode[cont] = u;
+					++cont;
+				}
+				it = nodeIndex.find(v);
+				if (it == nodeIndex.end()) {
+					nodeIndex[v] = cont;
+					indexNode[cont] = v;
+					++cont;
+				}
+	            G[u].neighbours.push_back(v);
+	        }
+			vector<double> d;
+			//vector<int> p;
+	        cin >> x >> y;
+	        dijkstra(G, nodeIndex[x], d, nodeIndex, indexNode, n);
+			cout << x << "\n";
+			for (unsigned int j = 0; j < d.size(); ++j) {
+
+				cout << "node " << indexNode[j] << " and cost " << d[j] << "\n";
 			}
-			it = nodeIndex.find(v);
-			if (it == nodeIndex.end()) {
-				nodeIndex[v] = cont;
-				indexNode[cont] = v;
-				++cont;
-			}
-            G[u].neighbours.push_back(v);
-        }
-		vector<double> d;
-		//vector<int> p;
-        cin >> x >> y;
-        dijkstra(G, nodeIndex[x], d, nodeIndex, indexNode, n);
-		cout << x << "\n";
-		for (unsigned int j = 0; j < d.size(); ++j) {
-			
-			cout << "node " << indexNode[j] << " and cost " << d[j] << "\n";  
-		}
-		cout << "\n";
-    }
+			cout << "\n";
+	    }
 
 }
