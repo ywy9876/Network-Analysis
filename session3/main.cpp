@@ -11,7 +11,7 @@
 #include <sstream>
 #include <algorithm>
 #include <random>
-#include <time.h>
+#include <chrono> 
 #include <omp.h>
 //#include <utility>
  
@@ -274,7 +274,8 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 	int count = 0;
 	cout << "Closeness centrality: " << endl;
 	omp_set_num_threads(omp_get_max_threads()) ;
-	#pragma omp parallel for reduction (+: C, count) 
+	omp_set_num_threads(8) ;
+	#pragma omp parallel for reduction (+: C) 
 	for (int idx = 0; idx < Nodes.size(); ++idx){
 		//cout << "thread " << omp_get_thread_num() << " calculating for node " << Nodes[idx] << " iteration " << idx << endl;
 		//cout << " node " << node << endl;
@@ -300,9 +301,9 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 		// update C
 		C += Ci;
 		//cout << "update C=" << C << endl;
+		#pragma omp atomic 
 		count += 1;
 		if (0 == omp_get_thread_num())
-			//if (count %% 1000 == 0)
 			cout << count << endl;
 
 	}
@@ -334,9 +335,11 @@ int main() {
 	cout << "Real graph" << endl;
 	printCreatedGraph( G, E, Nodes, nodeIndex, indexNode,n, m, 0);
 
-	clock_t tStart = clock();
+	auto start = std::chrono::high_resolution_clock::now();
 	calculate_closeness(G,E,Nodes,nodeIndex, indexNode,n,m);
-	cout << "Time spent in calculating closeness: " << (double)(clock() - tStart)/CLOCKS_PER_SEC << "s" << endl;
+	auto finish = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = finish - start;
+	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
 	/*
     int  c;
 	string u, v, x, y;
