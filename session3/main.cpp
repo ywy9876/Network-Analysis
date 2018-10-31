@@ -210,6 +210,7 @@ void create_graph(const string file_name) throw() {
 void calculate_closeness() {
 	
 	cout << "hello" << endl;
+
 }
 
 void calculate_distance(const WGraph& G, int s, vector<double>& d, vector<int>& p) {
