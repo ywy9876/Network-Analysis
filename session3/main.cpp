@@ -131,6 +131,7 @@ void create_graph(const string file_name,
 						it = G.find(a);
 						// if the dictionary already contains word a
 						if (it != G.end()) {
+							// if there's already a edge a->b
 							if (find((it->second).neighbours.begin(), (it->second).neighbours.end(), b) == (it->second).neighbours.end()) {
 								G[a].neighbours.push_back(b); // add b to adjacency list
 								E.push_back(make_pair(a, b)); // add to the edges vector
@@ -149,29 +150,24 @@ void create_graph(const string file_name,
 						}
 
 						it = G.find(b);
+						// if the node did not show up yet
 						if (it == G.end()) {
 							// since word b does not present in the dictionary, we add it with the edge
-							//G[b].neighbours.push_back(a);
-							//E.push_back(make_pair(b, a));
-							Node auxN;
-							G[b] = auxN;
+							G[b].neighbours.push_back(a);
 							Nodes.push_back(b);
 							nodeIndex[b] = n;
 							indexNode[n] = b;
 							++n;
-							//++m;
 						}
 						// if the dictionary already contains word b
-						/*
-						if (it != G.end()) {
+						else {
+							// if there's already a edge b->a
 							if (find(G[b].neighbours.begin(), G[b].neighbours.end(), a) == G[b].neighbours.end()) {
 								G[b].neighbours.push_back(a);
-								E.push_back(make_pair(b, a));
-								++m;
 							}
 						}
 
-						*/
+						
 					}
 					else ++sameNode;
 				}
