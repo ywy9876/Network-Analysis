@@ -215,13 +215,13 @@ void calculate_closeness() {
 }
 
 
-void switching {
+void switching () {
 
 }
 
 
 
-void calculat_bounded_closeness(sorting) {
+void calculate_bounded_closeness() {
 
 	// sorting: original, random, increasing degree, decreasing degree
 
@@ -239,10 +239,6 @@ void calculate_distance(const WGraph& G, int s, vector<double>& d, vector<int>& 
 }
 
 
-void calculate_distance(const WGraph& G, int s, vector<double>& d, vector<int>& p) {
-
-
-}
 
 void dijkstra(const WGraph& G, int s, vector<double>& d, vector<int>& p, int n) {
 
