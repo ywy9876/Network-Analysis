@@ -270,27 +270,30 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 
 	double C = 0;
 	cout << "Closeness centrality: " << endl;
+
 	for (auto node: Nodes){
-		cout << " node " << node << endl;
+		//cout << " node " << node << endl;
+		if (nodeIndex[node] % 1000 == 0 )
+			cout << nodeIndex[node] << endl;
 
 		// compute all dij
 		vector<double> d;
 		vector<int> p;
 
-		cout << " node of which we compute dij's:  " <<  nodeIndex[node] << endl;
+		//cout << " node of which we compute dij's:  " <<  nodeIndex[node] << endl;
 		dijkstra(G, nodeIndex[node], d, nodeIndex, indexNode, n);
 
 		// compute Ci
 		double Ci = 0;
-		cout << " dij's :";
+		//cout << " dij's :";
 		for (int i =0; i< d.size() ; i++){
 			if ( i ==  nodeIndex[node]) continue;
-			cout << " index node " << indexNode[i]  << " " << d[i] << endl;
+			//cout << " index node " << indexNode[i]  << " " << d[i] << endl;
 			double invdij = 1.0/double(d[i]);
 			Ci+=invdij;
 		}
 		Ci = Ci /(n - 1);
-		cout << "Ci=" << Ci << endl;
+		//cout << "Ci=" << Ci << endl;
 
 		// update C
 		C+=Ci;
