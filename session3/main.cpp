@@ -210,9 +210,34 @@ void create_graph(const string file_name) throw() {
 void calculate_closeness() {
 
 
-	cout << "bye" << endl;
+	cout << "bye bye" << endl;
 
 }
+
+
+void switching {
+
+}
+
+
+
+void calculat_bounded_closeness(sorting) {
+
+	// sorting: original, random, increasing degree, decreasing degree
+
+}
+
+void monte_carlo_execution () {
+
+
+}
+
+
+void calculate_distance(const WGraph& G, int s, vector<double>& d, vector<int>& p) {
+
+
+}
+
 
 void calculate_distance(const WGraph& G, int s, vector<double>& d, vector<int>& p) {
 
