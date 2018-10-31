@@ -11,6 +11,7 @@
 #include <sstream>
 #include <algorithm>
 #include <random>
+#include <time.h>
 //#include <utility> 
 using namespace std;
 
@@ -270,24 +271,26 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 	double C = 0;
 	cout << "Closeness centrality: " << endl;
 	for (auto node: Nodes){
-		//cout << " node " << node << endl;
+		cout << " node " << node << endl;
 
 		// compute all dij
 		vector<double> d;
 		vector<int> p;
 
+		cout << " node of which we compute dij's:  " <<  nodeIndex[node] << endl;
 		dijkstra(G, nodeIndex[node], d, nodeIndex, indexNode, n);
 
 		// compute Ci
 		double Ci = 0;
-		//cout << " dij's :"<< endl;
-		for (int i =0; i< d.size() && i !=  nodeIndex[node]; i++){
-			//cout << d[i] << endl;
+		cout << " dij's :";
+		for (int i =0; i< d.size() ; i++){
+			if ( i ==  nodeIndex[node]) continue;
+			cout << " index node " << indexNode[i]  << " " << d[i] << endl;
 			double invdij = 1.0/double(d[i]);
 			Ci+=invdij;
 		}
 		Ci = Ci /(n - 1);
-		//cout << "Ci=" << Ci << endl;
+		cout << "Ci=" << Ci << endl;
 
 		// update C
 		C+=Ci;
@@ -320,11 +323,12 @@ int main() {
 		create_graph(directory_path+file,G,E,Nodes,nodeIndex,indexNode,n,m);
 	}
 
-
+	cout << "Real graph" << endl;
 	printCreatedGraph( G, E, Nodes, nodeIndex, indexNode,n, m, 0);
 
+	clock_t tStart = clock();
 	calculate_closeness(G,E,Nodes,nodeIndex, indexNode,n,m);
-
+	printf("Time taken: %.2fs\n", (double)(clock() - tStart)/CLOCKS_PER_SEC);
 
     int  c;
 	string u, v, x, y;
