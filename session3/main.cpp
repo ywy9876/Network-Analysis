@@ -95,7 +95,13 @@ void create_ER(map<int, string>& indexNode, const int n, const int m) {
 }
 
 
-void create_graph(const string file_name) throw() {
+void create_graph(const string file_name,
+		Graph& G,
+		Edges& E,
+		vector<string>& Nodes,
+		map<string, int>& nodeIndex,
+		map<int, string>& indexNode,
+		int& n, int& m) throw() {
 	try {
 		string line;
 		ifstream myfile(file_name);
@@ -103,13 +109,13 @@ void create_graph(const string file_name) throw() {
 			// initializing the needed variables
 			bool firstLine = true;
 			int sameNode = 0;
-			int n = 0;
-			int m = 0; // n for number of nodes, m for number of edges
-			Graph G; // a dictionary which the key is the name of node (e.g a word) and the value is a adjacency list [b, c, etc.]
-			Edges E; // all the edges
-			vector <string> Nodes; // stores the words in the order of incoming
-			map<string, int> nodeIndex; // stores the correspondences between words and indices
-			map<int, string> indexNode; // stores the correspondences between indices and words
+			n = 0;
+			m = 0; // n for number of nodes, m for number of edges
+//			Graph G; // a dictionary which the key is the name of node (e.g a word) and the value is a adjacency list [b, c, etc.]
+//			Edges E; // all the edges
+//			vector <string> Nodes; // stores the words in the order of incoming
+//			map<string, int> nodeIndex; // stores the correspondences between words and indices
+//			map<int, string> indexNode; // stores the correspondences between indices and words
 
 			// read all lines of the file
 			while (getline(myfile, line)) {
@@ -173,32 +179,12 @@ void create_graph(const string file_name) throw() {
 			}
 			myfile.close();
 			create_ER(indexNode, n, m);
-			/*
-			cout << "Print G" << endl;
-			for (auto itr = G.begin(); itr != G.end(); ++itr)
-			{
-				cout << itr->first << ": ";
-				for (string neighbour : itr->second.neighbours)
-					cout << neighbour << '\t';
-				cout << endl;
-			}
-			cout << "Print E" << endl;
-			for (auto p : E)
-				cout << p.first << '\t' << p.second << endl;
-			cout << "Print Nodes" << endl;
-			for (auto node : Nodes)
-				cout << node << endl;
-			cout << "Print nodeIndex" << endl;
-			for (auto itr = nodeIndex.begin(); itr != nodeIndex.end(); ++itr)
-				cout << itr->first << "\t" << itr->second << endl;
-			cout << "Print indexNode" << endl;
-			for (auto itr = indexNode.begin(); itr != indexNode.end(); ++itr)
-				cout << itr->first << "\t" << itr->second << endl;
-			cout << "n: " << n << ", m: " << m << " , " << sameNode <<endl;
-			cout << G.size() << ", " << E.size() << endl;
-			*/
+			// printCreatedGraph(G,E,Nodes, indexNode, nodeIndex, sameNode);
+
 		}
 		else cout << "Could not open the file, please check the path name";
+
+
 	}
 	catch (const char* msg) {
 		cout << msg << endl;
@@ -206,8 +192,50 @@ void create_graph(const string file_name) throw() {
 	}
 }
 
+void printCreatedGraph(Graph& G,
+		Edges& E,
+		vector<string>& Nodes,
+		map<string, int>& nodeIndex,
+		map<int, string>& indexNode,
+		int n, int m, int sameNode){
+
+	cout << "Print G" << endl;
+	for (auto itr = G.begin(); itr != G.end(); ++itr)
+	{
+		cout << itr->first << ": ";
+		for (string neighbour : itr->second.neighbours)
+			cout << neighbour << '\t';
+		cout << endl;
+	}
+	cout << "Print E" << endl;
+	for (auto p : E)
+		cout << p.first << '\t' << p.second << endl;
+	cout << "Print Nodes" << endl;
+	for (auto node : Nodes)
+		cout << node << endl;
+	cout << "Print nodeIndex" << endl;
+	for (auto itr = nodeIndex.begin(); itr != nodeIndex.end(); ++itr)
+		cout << itr->first << "\t" << itr->second << endl;
+	cout << "Print indexNode" << endl;
+	for (auto itr = indexNode.begin(); itr != indexNode.end(); ++itr)
+		cout << itr->first << "\t" << itr->second << endl;
+	cout << "n: " << n << ", m: " << m << " , " << sameNode << endl;
+	cout << G.size() << ", " << E.size() << endl;
+
+}
 
 void calculate_closeness() {
+	/*
+	 *  MEAN CLOSENESS CENTRALITY
+	 *  C = 1/N* SUM{i=1,N} Ci
+	 *
+	 *  Ci = 1 / (N-1) * SUM{j=1,N:i!=j}1/dij
+	 *
+	 *  dii=0
+	 *
+	 *
+	 */
+
 
 
 	cout << "bye bye" << endl;
@@ -224,6 +252,7 @@ void switching () {
 void calculate_bounded_closeness() {
 
 	// sorting: original, random, increasing degree, decreasing degree
+
 
 }
 
@@ -270,14 +299,24 @@ void dijkstra(const WGraph& G, int s, vector<double>& d, vector<int>& p, int n) 
 
 
 int main() {
+
+	Graph G; // a dictionary which the key is the name of node (e.g a word) and the value is a adjacency list [b, c, etc.]
+	Edges E; // all the edges
+	vector <string> Nodes; // stores the words in the order of incoming
+	map<string, int> nodeIndex; // stores the correspondences between words and indices
+	map<int, string> indexNode; // stores the correspondences between indices and words
+	int n, m;
+
 	const auto& directory_path = string("./data/");
 	const auto& files = get_directory_files(directory_path);
 	for (const auto& file : files) {
 		cout << directory_path+file << endl;
-		create_graph(directory_path+file);
+		create_graph(directory_path+file,G,E,Nodes,nodeIndex,indexNode,n,m);
 	}
 
-    int n, m, u, v, c, x, y;
+	printCreatedGraph( G, E, Nodes, nodeIndex, indexNode,n, m, 0);
+
+    int u, v, c, x, y;
     while (cin >> n >> m) {
         WGraph G;
         for (int i = 0; i < m; ++i) {
