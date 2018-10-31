@@ -224,23 +224,6 @@ void printCreatedGraph(Graph& G,
 
 }
 
-void calculate_closeness() {
-	/*
-	 *  MEAN CLOSENESS CENTRALITY
-	 *  C = 1/N* SUM{i=1,N} Ci
-	 *
-	 *  Ci = 1 / (N-1) * SUM{j=1,N:i!=j}1/dij
-	 *
-	 *  dii=0
-	 *
-	 *
-	 */
-
-
-
-	cout << "bye bye" << endl;
-
-}
 
 
 void switching () {
@@ -269,7 +252,7 @@ void calculate_distance(const WGraph& G, int s, vector<double>& d, vector<int>& 
 
 
 
-void dijkstra(const WGraph& G, int s, vector<double>& d, vector<int>& p, int n) {
+void dijkstra(const Graph& G, int s, vector<double>& d, vector<int>& p, int n) {
 
 	d = vector<double>(n, infinit); d[s] = 0;
 	p = vector<int>(n, -1);
@@ -298,6 +281,50 @@ void dijkstra(const WGraph& G, int s, vector<double>& d, vector<int>& p, int n) 
 }
 
 
+void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, int>& nodeIndex,
+		map<int, string>& indexNode, int n, int m) {
+	/*
+	 *  MEAN CLOSENESS CENTRALITY
+	 *  C = 1/N * SUM{i=1,N} Ci
+	 *
+	 *  Ci = 1 / (N-1) * SUM{j=1,N:i!=j}1/dij
+	 *
+	 *  dii=0
+	 *
+	 *
+	 */
+
+	int C = 0;
+	cout << "Printing Nodes: " << endl;
+	for (auto node: Nodes){
+		cout << " node " << node << endl;
+
+		// compute all dij
+		vector<double> d;
+		vector<int> p;
+		dijkstra(G, node, d, p, n);
+
+		// compute Ci
+		double Ci = 0;
+		cout << " dij's :"<< endl;
+		for (int i =0; i<d.size(); i++){
+			cout << d[i] << endl;
+			double invdij = 1.0/double(d[i]);
+			Ci+=invdij;
+		}
+		Ci = Ci /(n - 1);
+
+		// update C
+		C+=Ci;
+
+
+	}
+	// finally set C
+	C = C / n;
+
+}
+
+
 int main() {
 
 	Graph G; // a dictionary which the key is the name of node (e.g a word) and the value is a adjacency list [b, c, etc.]
@@ -314,7 +341,9 @@ int main() {
 		create_graph(directory_path+file,G,E,Nodes,nodeIndex,indexNode,n,m);
 	}
 
-	printCreatedGraph( G, E, Nodes, nodeIndex, indexNode,n, m, 0);
+	//printCreatedGraph( G, E, Nodes, nodeIndex, indexNode,n, m, 0);
+
+	calculate_closeness(G,E,Nodes,nodeIndex, indexNode,n,m);
 
     int u, v, c, x, y;
     while (cin >> n >> m) {
