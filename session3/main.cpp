@@ -378,17 +378,17 @@ std::vector<T> slice(std::vector<T> const &v, int m, int n)
 //
 //}
 //
-//void sort_Nodes (Graph& G, Edges& E, vector<string>& Nodes, map<string, int>& nodeIndex,
-//		map<int, string>& indexNode, int n, int m, string sort_type ="shuffle"){
-//
-//	if (sort_type == "shuffle")
-//		return random_shuffle (Nodes.begin(), Nodes.end());
+void sort_Nodes (Graph& G, Edges& E, vector<string>& Nodes, map<string, int>& nodeIndex,
+		map<int, string>& indexNode, int n, int m, string sort_type ="shuffle"){
+
+	if (sort_type == "shuffle")
+		return random_shuffle (Nodes.begin(), Nodes.end());
 //	else if (sort_type == "incr")
 //		return sort (Nodes.begin(), Nodes.end(), getNodeDegree);
 //	else if (sort_type == "decr")
 //		return sort (Nodes.begin(), Nodes.end(),getNodeDegree);
-//
-//}
+
+}
 
 void calculate_closeness_v2_bounded(Graph& G, Edges& E, vector<string>& Nodes, map<string, int>& nodeIndex,
 		map<int, string>& indexNode, int n, int m) {
@@ -407,16 +407,16 @@ void calculate_closeness_v2_bounded(Graph& G, Edges& E, vector<string>& Nodes, m
 
 
 	//initialize the alternative hypothesis measure value
-	double xAH = 0.4;
+	double xAH = 0.6;
 
 	//	sort Nodes -> orign, random, increasing, decreasing
 //	std::cout << "myvector contains:";
 //	  for (std::vector<string>::iterator it=Nodes.begin(); it!=Nodes.begin()+4; ++it)
 //	    std::cout << ' ' << *it;
 //	  std::cout << '\n';
-//
-//	sort_Nodes(G,E, Nodes, nodeIndex,
-//			indexNode, n,m);
+
+	sort_Nodes(G,E, Nodes, nodeIndex,
+			indexNode, n,m);
 //	std::cout << "myvector contains:";
 //	  for (std::vector<string>::iterator it=Nodes.begin(); it!=Nodes.begin()+4; ++it)
 //	    std::cout << ' ' << *it;
@@ -450,7 +450,7 @@ void calculate_closeness_v2_bounded(Graph& G, Edges& E, vector<string>& Nodes, m
 		// 		M += nodebatch_size;
 		M += nodebatch_size;
 		// 		Cmax = Cmin + 1 - M/N;
-		Cmax = Cmin + 1 - M/n;
+		Cmax = Cmin + 1.0 - double(M)/double(n);
 		// 		C = Cmin
 		C = Cmin;
 		//
@@ -464,7 +464,8 @@ void calculate_closeness_v2_bounded(Graph& G, Edges& E, vector<string>& Nodes, m
 			break;
 		}
 
-		cout << " Nodes: " << nodeIndex[Nodesbatch[0]] << "-" << nodeIndex[Nodesbatch[nodebatch_size-1]] \
+		cout << " i: " << i << "-" << i + nodebatch_size-1 \
+			 << " Nodes: " << nodeIndex[Nodesbatch[0]] << "-" << nodeIndex[Nodesbatch[nodebatch_size-1]] \
 		     << " Cmin:" << Cmin << " Cmax:" << Cmax \
 			 << " xAH:" << xAH << " over xAH?" << nh_over_ah << " under xAH?" << nh_under_ah << endl;
 	}
