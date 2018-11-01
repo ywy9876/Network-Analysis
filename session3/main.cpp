@@ -423,7 +423,7 @@ void calculate_closeness_v2_bounded(Graph& G, Edges& E, vector<string>& Nodes, m
 //	  std::cout << '\n';
 
 	// Chop Nodes into batches of size...4?8?16?
-	int nodebatch_size = 16;
+	int nodebatch_size = 1000;
 
 
 	// Boolean deecistion variables
@@ -437,9 +437,9 @@ void calculate_closeness_v2_bounded(Graph& G, Edges& E, vector<string>& Nodes, m
 	 int M=0;
 
 	// for Nodebatch:
-	for (int i=0; i < n/nodebatch_size; i++){
+	for (int i=0; i < n - nodebatch_size + 1; i+=nodebatch_size){
 		// preparate NodeBatch
-		vector<string> Nodesbatch = slice(Nodes,i, nodebatch_size);
+		vector<string> Nodesbatch = slice(Nodes,i, i+nodebatch_size);
 		vector<string>& NodesbatchRef = Nodesbatch;
 
 		// 		compute Cbi/N;
@@ -464,12 +464,17 @@ void calculate_closeness_v2_bounded(Graph& G, Edges& E, vector<string>& Nodes, m
 			break;
 		}
 
+		cout << " Nodes: " << nodeIndex[Nodesbatch[0]] << "-" << nodeIndex[Nodesbatch[nodebatch_size-1]] \
+		     << " Cmin:" << Cmin << " Cmax:" << Cmax \
+			 << " xAH:" << xAH << " over xAH?" << nh_over_ah << " under xAH?" << nh_under_ah << endl;
 	}
+	cout << endl;
 	// print C,nh_under_ah, nh_over_ah;
 	cout << " xAH: " << xAH << endl;
 	cout << " partial C: " << C << endl;
 	cout << " Cmin: " << Cmin << endl;
 	cout << " Cmax: " << Cmax << endl;
+	cout << " over xAH?" << nh_over_ah << " under xAH?" << nh_under_ah << endl;
 }
 
 int main() {
@@ -501,7 +506,7 @@ int main() {
 
 
 	auto start = std::chrono::high_resolution_clock::now();
-	calculate_closeness_v1(G,E,Nodes,nodeIndex, indexNode,n,m);
+	calculate_closeness_v2_bounded(G,E,Nodes,nodeIndex, indexNode,n,m);
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
 	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
