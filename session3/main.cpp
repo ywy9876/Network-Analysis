@@ -87,13 +87,13 @@ void create_ER(map<int, string>& indexNode, const int n, const int m) {
 			}
 		}
 	}
-	cout << "Print G" << endl;
-	for (auto itr = G_ER.begin(); itr != G_ER.end(); ++itr) { 
-		cout << itr->first << ": ";  
-		for (string neighbour : itr->second.neighbours)
-			cout << neighbour << '\t'; 
-		cout << endl;
-	} 
+//	cout << "Print G" << endl;
+//	for (auto itr = G_ER.begin(); itr != G_ER.end(); ++itr) {
+//		cout << itr->first << ": ";
+//		for (string neighbour : itr->second.neighbours)
+//			cout << neighbour << '\t';
+//		cout << endl;
+//	}
 	cout << "m: " << edgesCreated << endl;
 }
 
@@ -257,7 +257,7 @@ void dijkstra(const Graph& G, int s, vector<double>& d, map<string, int> nodeInd
 }
 
 
-void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, int>& nodeIndex,
+void calculate_closeness_v1(Graph& G, Edges& E, vector<string>& Nodes, map<string, int>& nodeIndex,
 		map<int, string>& indexNode, int n, int m) {
 	/*
 	 *  MEAN CLOSENESS CENTRALITY
@@ -274,9 +274,10 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 	int count = 0;
 	cout << "Closeness centrality: " << endl;
 	omp_set_num_threads(omp_get_max_threads()) ;
-	omp_set_num_threads(8) ;
-	#pragma omp parallel for reduction (+: C) 
+	omp_set_num_threads(8) ;  // 8 175s 32 176s  64 170s,  128 179s,
+	#pragma omp parallel for firstprivate(count) reduction (+: C)
 	for (int idx = 0; idx < Nodes.size(); ++idx){
+		//cout << "OMP_NUM_THREADS=" << omp_get_num_threads() << endl;
 		//cout << "thread " << omp_get_thread_num() << " calculating for node " << Nodes[idx] << " iteration " << idx << endl;
 		//cout << " node " << node << endl;
 		//if (nodeIndex[node] % 1000 == 0 )
@@ -301,9 +302,11 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 		// update C
 		C += Ci;
 		//cout << "update C=" << C << endl;
-		#pragma omp atomic 
+		//#pragma omp atomic
+		//we can also just count num vertices processes by one thread without sharing this counter
+		// because atomic kills performance usually
 		count += 1;
-		if (0 == omp_get_thread_num())
+		if (count % 1000 == 0 && 0 == omp_get_thread_num())
 			cout << count << endl;
 
 	}
@@ -315,6 +318,159 @@ void calculate_closeness(Graph& G, Edges& E, vector<string>& Nodes, map<string, 
 
 }
 
+double closeness_batch (Graph& G, Edges& E, vector<string>& Nodes, map<string, int>& nodeIndex,
+		map<int, string>& indexNode, int n, int m) {
+	/*
+	 *  MEAN CLOSENESS CENTRALITY
+	 *  C = 1/N * SUM{i=1,N} Ci
+	 *
+	 *  Ci = 1 / (N-1) * SUM{j=1,N:i!=j}1/dij
+	 *
+	 *  Nodes contains a subset of all the Nodes of the graph
+	 *  -> this allows to compute with parallelization
+	 *
+	 *  returns C_batch
+	 *
+	*/
+
+	double C = 0;
+	int count = 0;
+
+	omp_set_num_threads(50);
+	#pragma omp parallel for firstprivate(count) reduction (+: C)
+	for (int idx = 0; idx < Nodes.size(); ++idx){
+
+		// compute all dij
+		vector<double>& d = G[Nodes[idx]].distances;
+
+		//cout << " node of which we compute dij's:  " <<  nodeIndex[node] << endl;
+		dijkstra(G, idx, d, nodeIndex, indexNode, n);
+
+		// compute Ci
+		double Ci = 0;
+		for ( int i = 0; i < d.size() ; i++){
+			if (i ==  idx) continue;
+			double invdij = 1.0/double(d[i]);
+			Ci += invdij;
+		}
+		Ci = Ci /(n - 1);
+		C += Ci;
+	}
+	C = C / n;
+
+	return C;
+
+}
+
+template<typename T>
+std::vector<T> slice(std::vector<T> const &v, int m, int n)
+{
+    auto first = v.cbegin() + m;
+    auto last = v.cbegin() + n + 1;
+
+    std::vector<T> vec(first, last);
+    return vec;
+}
+//
+//bool getNodeDegree(const vector<string>&  v1, const vector<string>&  v2){
+//
+//	return true;
+//
+//}
+//
+//void sort_Nodes (Graph& G, Edges& E, vector<string>& Nodes, map<string, int>& nodeIndex,
+//		map<int, string>& indexNode, int n, int m, string sort_type ="shuffle"){
+//
+//	if (sort_type == "shuffle")
+//		return random_shuffle (Nodes.begin(), Nodes.end());
+//	else if (sort_type == "incr")
+//		return sort (Nodes.begin(), Nodes.end(), getNodeDegree);
+//	else if (sort_type == "decr")
+//		return sort (Nodes.begin(), Nodes.end(),getNodeDegree);
+//
+//}
+
+void calculate_closeness_v2_bounded(Graph& G, Edges& E, vector<string>& Nodes, map<string, int>& nodeIndex,
+		map<int, string>& indexNode, int n, int m) {
+	/*
+	 *  MEAN CLOSENESS CENTRALITY
+	 *  C = 1/N * SUM{i=1,N} Ci
+	 *
+	 *  Ci = 1 / (N-1) * SUM{j=1,N:i!=j}1/dij
+	 *
+	 *  dii=0
+	 *
+	 * bounded computation by xNHmin and xNHmax
+	 * parallelization by batches (of randomized nodes!)
+	 * after each batch we recompute xNHmin and xNHmax and compare with alternative hypothesis
+	 */
+
+
+	//initialize the alternative hypothesis measure value
+	double xAH = 0.4;
+
+	//	sort Nodes -> orign, random, increasing, decreasing
+//	std::cout << "myvector contains:";
+//	  for (std::vector<string>::iterator it=Nodes.begin(); it!=Nodes.begin()+4; ++it)
+//	    std::cout << ' ' << *it;
+//	  std::cout << '\n';
+//
+//	sort_Nodes(G,E, Nodes, nodeIndex,
+//			indexNode, n,m);
+//	std::cout << "myvector contains:";
+//	  for (std::vector<string>::iterator it=Nodes.begin(); it!=Nodes.begin()+4; ++it)
+//	    std::cout << ' ' << *it;
+//	  std::cout << '\n';
+
+	// Chop Nodes into batches of size...4?8?16?
+	int nodebatch_size = 16;
+
+
+	// Boolean deecistion variables
+	int nh_over_ah  = 0;
+	int nh_under_ah = 0;
+
+
+	 double C=0;
+	 double Cmax=0;
+	 double Cmin=0;
+	 int M=0;
+
+	// for Nodebatch:
+	for (int i=0; i < n/nodebatch_size; i++){
+		// preparate NodeBatch
+		vector<string> Nodesbatch = slice(Nodes,i, nodebatch_size);
+		vector<string>& NodesbatchRef = Nodesbatch;
+
+		// 		compute Cbi/N;
+		// 		Cmin += Cbi/N;
+		Cmin += closeness_batch(G,E, NodesbatchRef, nodeIndex,
+					indexNode, n,m);
+
+		// 		M += nodebatch_size;
+		M += nodebatch_size;
+		// 		Cmax = Cmin + 1 - M/N;
+		Cmax = Cmin + 1 - M/n;
+		// 		C = Cmin
+		C = Cmin;
+		//
+		if ( Cmin >= xAH){
+			nh_over_ah = 1;
+			cout << " xNH over xAH? " << nh_over_ah << endl;
+			break;
+		}else if ( Cmax <= xAH ){
+			nh_under_ah = 1;
+			cout << " xNH under xAH? " << nh_under_ah << endl;
+			break;
+		}
+
+	}
+	// print C,nh_under_ah, nh_over_ah;
+	cout << " xAH: " << xAH << endl;
+	cout << " partial C: " << C << endl;
+	cout << " Cmin: " << Cmin << endl;
+	cout << " Cmax: " << Cmax << endl;
+}
 
 int main() {
 
@@ -325,18 +481,27 @@ int main() {
 	map<int, string> indexNode; // stores the correspondences between indices and words
 	int n, m;
 
-	const auto& directory_path = string("./data/");
-	const auto& files = get_directory_files(directory_path);
-	for (const auto& file : files) {
-		cout << directory_path+file << endl;
-		create_graph(directory_path+file,G,E,Nodes,nodeIndex,indexNode,n,m);
-	}
+//	const auto& directory_path = string("./data/");
+//	const auto& files = get_directory_files(directory_path);
+//	for (const auto& file : files) {
+//		cout << directory_path+file << endl;
+//		create_graph(directory_path+file,G,E,Nodes,nodeIndex,indexNode,n,m);
+//	}
 
-	cout << "Real graph" << endl;
-	printCreatedGraph( G, E, Nodes, nodeIndex, indexNode,n, m, 0);
+//	create_graph("./datarepo/1.txt",G,E,Nodes,nodeIndex,indexNode,n,m);
+//	create_graph("./datarepo/Arabic_syntactic_dependency_network.txt",G,E,Nodes,nodeIndex,indexNode,n,m);
+	create_graph("./datarepo/Basque_syntactic_dependency_network.txt",G,E,Nodes,nodeIndex,indexNode,n,m);
+//	create_graph("./datarepo/Catalan_syntactic_dependency_network.txt",G,E,Nodes,nodeIndex,indexNode,n,m);
+//	create_graph("./datarepo/Chinese_syntactic_dependency_network.txt",G,E,Nodes,nodeIndex,indexNode,n,m);
+//	create_graph("./datarepo/Czech_syntactic_dependency_network.txt",G,E,Nodes,nodeIndex,indexNode,n,m);
+
+
+	//cout << "Real graph" << endl;
+	//printCreatedGraph( G, E, Nodes, nodeIndex, indexNode,n, m, 0);
+
 
 	auto start = std::chrono::high_resolution_clock::now();
-	calculate_closeness(G,E,Nodes,nodeIndex, indexNode,n,m);
+	calculate_closeness_v1(G,E,Nodes,nodeIndex, indexNode,n,m);
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
 	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;

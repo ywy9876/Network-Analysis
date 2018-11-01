@@ -1,0 +1,14 @@
+.PHONY: h1 h2 h3 h4
+all: h1 h2 h3 h4
+
+h1:
+	@session3T4Lbasque
+
+h2:
+	@session3T4Lbasque
+
+h3:
+	@session3T4Lbasque
+
+h4:
+	@session3T4Lbasque
