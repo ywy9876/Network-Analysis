@@ -38,7 +38,7 @@ typedef vector <pair<string, string> > Edges; // stores all the edges
 
 
 const int infinit = 100000000;
-const unsigned int seed = 1234567;
+
 
 
 template<typename T>
@@ -429,12 +429,12 @@ public:
 		closeness_centrality = C;
 
 		// print C,nh_under_ah, nh_over_ah;
-		cout << endl;
-		cout << " xAH: " << xAH << endl;
-		cout << " partial C: " << C << endl;
-		cout << " Cmin: " << Cmin << endl;
-		cout << " Cmax: " << Cmax << endl;
-		cout << " over xAH?" << nh_over_ah << " under xAH?" << nh_under_ah << endl;
+//		cout << endl;
+//		cout << " xAH: " << xAH << endl;
+//		cout << " partial C: " << C << endl;
+//		cout << " Cmin: " << Cmin << endl;
+//		cout << " Cmax: " << Cmax << endl;
+//		cout << " over xAH?" << nh_over_ah << " under xAH?" << nh_under_ah << endl;
 	}
 
 

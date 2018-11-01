@@ -21,6 +21,7 @@
  
 using namespace std;
 
+const unsigned int seed = 1234567;
 
 vector <string> get_directory_files(const string& dir) {
 	struct dirent *dirent_ptr;
@@ -41,6 +42,24 @@ vector <string> get_directory_files(const string& dir) {
 }
 
 
+void write_NH_estimation_result(MyGraph g, vector<double> xNHs, string filename){
+
+	ofstream myfile;
+	myfile.open ("results.txt",  ios::out | ios::app );
+
+	cout << "Result: " << filename.substr(11,20)   <<  " xA=" << g.closeness_centrality << " xNH=[";
+	myfile << "Result: " << filename.substr(11,20)    <<  " xA=" << g.closeness_centrality << " xNH=[";
+
+	for (std::vector<double>::iterator it = xNHs.begin() ; it != xNHs.end(); ++it){
+		cout << *it << ", ";
+		myfile << *it << ", ";
+	}
+	cout << "]" << endl;
+	myfile << "]" << endl;
+
+	myfile.close();
+
+}
 
 void monteCarlo_estimation_with_ER(string filename){
 
@@ -56,8 +75,13 @@ void monteCarlo_estimation_with_ER(string filename){
 	int T = 2;
 	vector<double> xNHs;
 
+	// seed and rng  initialization
+	default_random_engine gen (seed);
+	// a random number between 0 and number of nodes -1 because of the index of vector, no matter the value
+	uniform_int_distribution<int> dist(0, g.n-1);
+
 	for (int i=0; i < T ; i++){
-		MyER er = MyER(g);
+		MyER er = MyER(g, dist, gen);
 
 		auto start2 = std::chrono::high_resolution_clock::now();
 		er.calculate_closeness_v2_bounded(g.closeness_centrality);
@@ -68,16 +92,11 @@ void monteCarlo_estimation_with_ER(string filename){
 		cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
 	}
 
-	cout << "Result: xA=" << g.closeness_centrality << "xNH=[";
-	for (std::vector<double>::iterator it = xNHs.begin() ; it != xNHs.end(); ++it){
-			cout << *it << ", ";
-		}
-	cout << "]" << endl;
-
 	auto finish3 = std::chrono::high_resolution_clock::now();
 	elapsed = finish3 - start;
 	cout << "Total time: " << elapsed.count() << "s" << endl;
 
+	write_NH_estimation_result(g,xNHs,filename);
 }
 
 void estimate_all_x_with_ER_NH(){
@@ -93,8 +112,8 @@ void estimate_all_x_with_ER_NH(){
 
 int main() {
 
-//	monteCarlo_estimation_with_ER("./datarepo/1.txt");
-	monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_ER("./datarepo/1.txt");
+//	monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
 
 //	MyGraph g = MyGraph("./datarepo/1.txt");
 //	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");

@@ -26,7 +26,7 @@ public:
 
 	map <string, char> E_ER; // key composed by origin+destination words
 
-	MyER(const MyGraph& g) {
+	MyER(const MyGraph& g, uniform_int_distribution<int>& dist, default_random_engine& gen) {
 
 
 		//G is not initialized
@@ -36,10 +36,6 @@ public:
 		indexNode = g.indexNode; // makes a copy
 		nodeIndex = g.nodeIndex; //makes a copy
 		Nodes = g.Nodes;  // makes a copy
-
-		default_random_engine gen (seed);
-		// a random number between 0 and number of nodes -1 because of the index of vector, no matter the value
-		uniform_int_distribution<int> dist(0, n-1);
 
 
 		//cout << " Initialized ER " << endl;
