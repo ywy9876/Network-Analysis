@@ -13,6 +13,7 @@
 #include <random>
 #include <chrono> 
 #include <omp.h>
+#include <math.h> 
 //#include <utility>
  
 using namespace std;
@@ -36,7 +37,7 @@ typedef vector <pair<string, string> > Edges; // stores all the edges
  
 const int infinit = 100000000;
 const unsigned int seed = 1234567;
-
+//const unsigned seed = std::chrono::system_clock::now().time_since_epoch().count();
 vector <string> get_directory_files(const string& dir) {
 	struct dirent *dirent_ptr;
 	shared_ptr<DIR> directory_ptr(opendir(dir.c_str()), [](DIR* dir){ dir && closedir(dir); });
@@ -63,9 +64,10 @@ void create_ER(map<int, string>& indexNode, const int n, const int m) {
 	//Edges E_ER;
 	map <string, char> E_ER; // key composed by origin+destination words
 	int edgesCreated = 0;
+	int originIndex, destinationIndex;
 	while (edgesCreated < m) {
-		int originIndex = dist(gen);
-		int destinationIndex = dist(gen);
+		originIndex = dist(gen);
+		destinationIndex = dist(gen);
 		// cannot have loop
 		if (originIndex != destinationIndex) {
 			string origin = indexNode[originIndex]; 
@@ -87,17 +89,139 @@ void create_ER(map<int, string>& indexNode, const int n, const int m) {
 			}
 		}
 	}
-//	cout << "Print G" << endl;
-//	for (auto itr = G_ER.begin(); itr != G_ER.end(); ++itr) {
-//		cout << itr->first << ": ";
-//		for (string neighbour : itr->second.neighbours)
-//			cout << neighbour << '\t';
-//		cout << endl;
-//	}
+	/*
+	cout << "Print ER" << endl;
+	for (auto itr = G_ER.begin(); itr != G_ER.end(); ++itr) {
+		cout << itr->first << ": ";
+		for (string neighbour : itr->second.neighbours)
+			cout << neighbour << '\t';
+		cout << endl;
+	}
 	cout << "m: " << edgesCreated << endl;
+	*/
 }
 
+void create_switching(map<int, string>& indexNode, map<string, int>& nodeIndex, Edges E, int Q) {
+	int m = E.size();
+	int QE = Q * m;
+	int count = 0;
+	int notValid = 0;
+	int edge1, edge2;
+	string u, v, s, t;
+	map <string, char> actualEdges; // char to save space
+	for (auto edge: E) {
+		actualEdges[edge.first+edge.second] = '1';
+		actualEdges[edge.second+edge.first] = '1';
+	}
+	default_random_engine gen (seed);
+	uniform_int_distribution<int> dist(0, E.size() - 1);
+	while (count < QE) {
+		++count;
+		edge1 = dist(gen);
+		edge2 = dist(gen);
+		// we simply dont want it choose the same edge
+		while (edge1 == edge2) 
+			edge2 = dist(gen);
+		u = E[edge1].first;
+		v = E[edge1].second;
+		s = E[edge2].first;
+		t = E[edge2].second;
+		//cout << u << " " << v  << " " << s << " " << t << endl;
+		// first, check it the switching produces a loop
+		if (u == t or s == v) {
+			++notValid;
+			continue;
+		}
+		// now check if u-t already exist 
+		auto itr = actualEdges.find(u+t);
+		if (itr != actualEdges.end()) {
+			++notValid;
+			continue;
+		}
+		itr = actualEdges.find(t+u);
+		if (itr != actualEdges.end()) {
+			++notValid;
+			continue;
+		}
+		// now check if s-v already exist 
+		itr = actualEdges.find(s+v);
+		if (itr != actualEdges.end()) {
+			++notValid;
+			continue;
+		}
+		itr = actualEdges.find(v+s);
+		if (itr != actualEdges.end()) {
+			++notValid;
+			continue;
+		}
+		// all constraints satisfied, modify the vector E and actualEdges
+		// erase u+v, v+u, s+t, t+s from the map actualEdges
+		actualEdges.erase(u+v);
+		actualEdges.erase(v+u);
+		actualEdges.erase(s+t);
+		actualEdges.erase(t+s);	
+		// add u+t, t+u, s+v, v+s
+		actualEdges[u+t] = '1';
+		actualEdges[t+u] = '1';
+		actualEdges[s+v] = '1';
+		actualEdges[v+s] = '1';
+		// modify the vector E, uv -> ut, st -> sv
+		E[edge1] = make_pair(u, t);
+		E[edge2] = make_pair(s, v);
+	}
+	Graph G; //create graph using E
+	for (auto edge: E) {
+		G[edge.first].neighbours.push_back(edge.second);
+		G[edge.second].neighbours.push_back(edge.first);
+	}
+	cout << "Print Switching model" << endl;
+	for (auto itr = G.begin(); itr != G.end(); ++itr) {
+		cout << itr->first << ": ";
+		for (string neighbour : itr->second.neighbours)
+			cout << neighbour << '\t';
+		cout << endl;
+	}
+	for (auto edge: E) {
+		cout << edge.first << " -> " << edge.second << endl;
+	}
 	
+	cout << "Edges: " << E.size() << endl; 
+	cout << "QE: " << QE << endl;
+	cout << "failed switching: " << notValid << endl;
+}
+
+void printCreatedGraph(Graph& G,
+		Edges& E,
+		vector<string>& Nodes,
+		map<string, int>& nodeIndex,
+		map<int, string>& indexNode,
+		int n, int m, int sameNode){
+
+	cout << "Print G" << endl;
+	for (auto itr = G.begin(); itr != G.end(); ++itr)
+	{
+		cout << itr->first << ": ";
+		for (string neighbour : itr->second.neighbours)
+			cout << neighbour << '\t';
+		cout << endl;
+	}
+	cout << "Print E" << endl;
+	for (auto p : E)
+		cout << p.first << '\t' << p.second << endl;
+	cout << "Print Nodes" << endl;
+	for (auto node : Nodes)
+		cout << node << endl;
+	cout << "Print nodeIndex" << endl;
+	for (auto itr = nodeIndex.begin(); itr != nodeIndex.end(); ++itr)
+		cout << itr->first << "\t" << itr->second << endl;
+	cout << "Print indexNode" << endl;
+	for (auto itr = indexNode.begin(); itr != indexNode.end(); ++itr)
+		cout << itr->first << "\t" << itr->second << endl;
+	cout << "n: " << n << ", m: " << m << " , " << sameNode << endl;
+	cout << G.size() << ", " << E.size() << endl;
+
+}
+
 void create_graph(const string file_name,
 		Graph& G,
 		Edges& E,
@@ -177,8 +301,11 @@ void create_graph(const string file_name,
 				else firstLine = false;
 			}
 			myfile.close();
+			cout << "Original:" << endl;
+			printCreatedGraph(G,E,Nodes, nodeIndex, indexNode, n, m, sameNode);
 			create_ER(indexNode, n, m);
-			// printCreatedGraph(G,E,Nodes, indexNode, nodeIndex, sameNode);
+			int Q = max(1, (int) log10(m));
+			create_switching(indexNode, nodeIndex, E, Q);
 
 		}
 		else cout << "Could not open the file, please check the path name";
@@ -190,40 +317,6 @@ void create_graph(const string file_name,
 		exit(1);
 	}
 }
-
-void printCreatedGraph(Graph& G,
-		Edges& E,
-		vector<string>& Nodes,
-		map<string, int>& nodeIndex,
-		map<int, string>& indexNode,
-		int n, int m, int sameNode){
-
-	cout << "Print G" << endl;
-	for (auto itr = G.begin(); itr != G.end(); ++itr)
-	{
-		cout << itr->first << ": ";
-		for (string neighbour : itr->second.neighbours)
-			cout << neighbour << '\t';
-		cout << endl;
-	}
-	cout << "Print E" << endl;
-	for (auto p : E)
-		cout << p.first << '\t' << p.second << endl;
-	cout << "Print Nodes" << endl;
-	for (auto node : Nodes)
-		cout << node << endl;
-	cout << "Print nodeIndex" << endl;
-	for (auto itr = nodeIndex.begin(); itr != nodeIndex.end(); ++itr)
-		cout << itr->first << "\t" << itr->second << endl;
-	cout << "Print indexNode" << endl;
-	for (auto itr = indexNode.begin(); itr != indexNode.end(); ++itr)
-		cout << itr->first << "\t" << itr->second << endl;
-	cout << "n: " << n << ", m: " << m << " , " << sameNode << endl;
-	cout << G.size() << ", " << E.size() << endl;
-
-}
-
-
 
 void calculate_distance(const WGraph& G, int s, vector<double>& d, vector<int>& p) {
 
