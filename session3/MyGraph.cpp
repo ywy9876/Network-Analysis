@@ -62,6 +62,7 @@ public:
 	map<int, string> indexNode;// stores the correspondences between indices and words
 	int n;
 	int m; // n for number of nodes, m for number of edges
+	double closeness_centrality;
 
 	MyGraph(){
 		n=0;
@@ -267,6 +268,7 @@ public:
 		// finally set C
 		C = C / n;
 
+		closeness_centrality = C;
 		cout << "closeness centrality CWS: " << endl;
 		cout << C << endl;
 
@@ -370,10 +372,10 @@ public:
 
 
 		//	sort Nodes -> orign, random, increasing, decreasing
-		print_nodes_vector();
+//		print_nodes_vector();
 		sort_Nodes( "rand");
-		cout << "after sorting ";
-		print_nodes_vector();
+//		cout << "after sorting ";
+//		print_nodes_vector();
 
 		// Chop Nodes into batches of size...4?8?16?
 		int nodebatch_size = 1000;
@@ -408,21 +410,26 @@ public:
 			//
 			if ( Cmin >= xAH){
 				nh_over_ah = 1;
-				cout << " xNH over xAH? " << nh_over_ah << endl;
+				//cout << " xNH over xAH? " << nh_over_ah << endl;
 				break;
 			}else if ( Cmax <= xAH ){
 				nh_under_ah = 1;
-				cout << " xNH under xAH? " << nh_under_ah << endl;
+				C = Cmax;
+				//cout << " xNH under xAH? " << nh_under_ah << endl;
 				break;
 			}
 
-			cout << " i: " << i << "-" << i + nodebatch_size-1 \
-				 << " Nodes: " << nodeIndex[Nodesbatch[0]] << "-" << nodeIndex[Nodesbatch[nodebatch_size-1]] \
-			     << " Cmin:" << Cmin << " Cmax:" << Cmax \
-				 << " xAH:" << xAH << " over xAH?" << nh_over_ah << " under xAH?" << nh_under_ah << endl;
+//			cout << " i: " << i << "-" << i + nodebatch_size-1 \
+//				 << " Nodes: " << nodeIndex[Nodesbatch[0]] << "-" << nodeIndex[Nodesbatch[nodebatch_size-1]] \
+//			     << " Cmin:" << Cmin << " Cmax:" << Cmax \
+//				 << " xAH:" << xAH << " over xAH?" << nh_over_ah << " under xAH?" << nh_under_ah << endl;
 		}
-		cout << endl;
+
+
+		closeness_centrality = C;
+
 		// print C,nh_under_ah, nh_over_ah;
+		cout << endl;
 		cout << " xAH: " << xAH << endl;
 		cout << " partial C: " << C << endl;
 		cout << " Cmin: " << Cmin << endl;

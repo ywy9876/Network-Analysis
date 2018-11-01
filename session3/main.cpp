@@ -42,30 +42,9 @@ vector <string> get_directory_files(const string& dir) {
 
 
 
+void monteCarlo_estimation_with_ER(string filename){
 
-
-
-void calculate_distance(const WGraph& G, int s, vector<double>& d, vector<int>& p) {
-
-	
-}
-
-
-
-
-int main() {
-
-
-//	MyGraph g = MyGraph("./datarepo/1.txt");
-	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
-//	MyGraph g = MyGraph("./datarepo/Arabic_syntactic_dependency_network.txt");
-//	MyGraph g = MyGraph("./datarepo/Catalan_syntactic_dependency_network.txt");
-//	MyGraph g = MyGraph("./datarepo/Chinese_syntactic_dependency_network.txt");
-//	MyGraph g = MyGraph("./datarepo/Czech_syntactic_dependency_network.txt");
-//	MyGraph g = MyGraph("./datarepo/English_syntactic_dependency_network.txt");
-
-	cout << "Real graph" << endl;
-	//g.print();
+	MyGraph g = MyGraph(filename);
 
 	auto start = std::chrono::high_resolution_clock::now();
 	g.calculate_closeness_v1();
@@ -73,19 +52,80 @@ int main() {
 	std::chrono::duration<double> elapsed = finish - start;
 	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
 
+	//with alpha= 0.05 -> T >> 1/alph = 20
+	int T = 2;
+	vector<double> xNHs;
 
-	cout << " Creating an ER " << endl;
-	MyER er = MyER(g);
-	//cout << "m: " << er.m << endl;
-	//er.printER();
-	//cout << " Now the print method" << endl;
-	//er.print();
+	for (int i=0; i < T ; i++){
+		MyER er = MyER(g);
 
-	start = std::chrono::high_resolution_clock::now();
-	er.calculate_closeness_v1();
-	finish = std::chrono::high_resolution_clock::now();
-	elapsed = finish - start;
-	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+		auto start2 = std::chrono::high_resolution_clock::now();
+		er.calculate_closeness_v2_bounded(g.closeness_centrality);
+		auto finish2 = std::chrono::high_resolution_clock::now();
+		elapsed = finish2 - start2;
+
+		xNHs.push_back(er.closeness_centrality);
+		cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
+	}
+
+	cout << "Result: xA=" << g.closeness_centrality << "xNH=[";
+	for (std::vector<double>::iterator it = xNHs.begin() ; it != xNHs.end(); ++it){
+			cout << *it << ", ";
+		}
+	cout << "]" << endl;
+
+	auto finish3 = std::chrono::high_resolution_clock::now();
+	elapsed = finish3 - start;
+	cout << "Total time: " << elapsed.count() << "s" << endl;
+
+}
+
+void estimate_all_x_with_ER_NH(){
+
+	vector<string> dirfiles = get_directory_files("./datarepo");
+
+	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
+		monteCarlo_estimation_with_ER(*it);
+	}
+
+}
+
+
+int main() {
+
+//	monteCarlo_estimation_with_ER("./datarepo/1.txt");
+	monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
+
+//	MyGraph g = MyGraph("./datarepo/1.txt");
+//	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+//	MyGraph g = MyGraph("./datarepo/Arabic_syntactic_dependency_network.txt");
+//	MyGraph g = MyGraph("./datarepo/Catalan_syntactic_dependency_network.txt");
+//	MyGraph g = MyGraph("./datarepo/Chinese_syntactic_dependency_network.txt");
+//	MyGraph g = MyGraph("./datarepo/Czech_syntactic_dependency_network.txt");
+//	MyGraph g = MyGraph("./datarepo/English_syntactic_dependency_network.txt");
+//
+//	cout << "Real graph" << endl;
+//	//g.print();
+//
+//	auto start = std::chrono::high_resolution_clock::now();
+//	g.calculate_closeness_v1();
+//	auto finish = std::chrono::high_resolution_clock::now();
+//	std::chrono::duration<double> elapsed = finish - start;
+//	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+//
+//
+//	cout << " Creating an ER " << endl;
+//	MyER er = MyER(g);
+//	//cout << "m: " << er.m << endl;
+//	//er.printER();
+//	//cout << " Now the print method" << endl;
+//	//er.print();
+//
+//	start = std::chrono::high_resolution_clock::now();
+//	er.calculate_closeness_v1();
+//	finish = std::chrono::high_resolution_clock::now();
+//	elapsed = finish - start;
+//	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
 
 
 }

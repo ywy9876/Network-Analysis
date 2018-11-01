@@ -42,7 +42,7 @@ public:
 		uniform_int_distribution<int> dist(0, n-1);
 
 
-		cout << " Initialized ER " << endl;
+		//cout << " Initialized ER " << endl;
 
 		int edgesCreated = 0;
 		while (edgesCreated < m) {
