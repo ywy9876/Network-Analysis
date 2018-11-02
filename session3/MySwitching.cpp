@@ -50,7 +50,7 @@
 			s = E[edge2].first;
 			t = E[edge2].second;
 			cout << u << " " << v  << " " << s << " " << t << endl;
-			// first, check it the switching produces a loop
+			// first, check if the switching produces a loop
 			if (u == t or s == v) {
 				++notValid;
 				continue;
