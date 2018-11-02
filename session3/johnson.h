@@ -5,6 +5,29 @@
 // accompanying file LICENSE_1_0.txt or copy at
 // http://www.boost.org/LICENSE_1_0.txt)
 //=======================================================================
+#include <iostream>
+#include <string>
+#include <vector>
+#include <queue>
+#include <map>
+#include <iterator>
+#include <dirent.h>
+#include <cstring>
+#include <memory>
+#include <fstream>
+#include <sstream>
+#include <algorithm>
+#include <random>
+#include <chrono>
+#include <omp.h>
+#include <fstream>
+#include <iostream>
+#include <vector>
+#include <iomanip>
+//#include <utility>
+using namespace std;
+
+
 #include <boost/config.hpp>
 #include <fstream>
 #include <iostream>
@@ -30,8 +53,8 @@ typedef std::vector <std::pair<std::string, std::string> > Edges2; // stores all
 
 typedef std::pair < int, int >Edge;
 
-
-int testj2(std::string file_name);
+int read_graph2(std::string file_name);
+int testj2(int n, std::vector<Edge> edge_vect);
 
 
 #endif /* JOHNSON_H_ */

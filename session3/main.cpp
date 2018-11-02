@@ -181,7 +181,7 @@ void compute_all_x(){
 
 	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
 		cout << "./datarepo/"+*it << endl;
-		testj2("./datarepo/"+*it);
+		read_graph2("./datarepo/"+*it);
 	}
 
 }
@@ -341,9 +341,10 @@ int main() {
 
 // example_ER();
 
-//	testj2("./datarepo/Basque_syntactic_dependency_network.txt");
+	//read_graph2("./datarepo/Basque_syntactic_dependency_network.txt");
+	read_graph2("./datarepo/1.txt");
 
-	compute_all_x();
+//	compute_all_x();
 
 }
 
