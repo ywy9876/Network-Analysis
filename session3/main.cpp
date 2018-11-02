@@ -17,7 +17,7 @@
 
 
 
-
+//#include "johnson.cpp"
 #include "MyER.cpp"
  
 using namespace std;
@@ -136,13 +136,15 @@ void estimate_all_x_with_ER_NH(){
 
 int main() {
 
-	//estimate_all_x_with_ER_NH();
+//	estimate_all_x_with_ER_NH(); // too long to execute, better a single file approach
 
-    monteCarlo_estimation_with_ER("./datarepo/1.txt");
+//    monteCarlo_estimation_with_ER("./datarepo/1.txt");
 //	monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
 
 //	MyGraph g = MyGraph("./datarepo/1.txt");
-//	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+
+
 //	MyGraph g = MyGraph("./datarepo/Arabic_syntactic_dependency_network.txt");
 //	MyGraph g = MyGraph("./datarepo/Catalan_syntactic_dependency_network.txt");
 //	MyGraph g = MyGraph("./datarepo/Chinese_syntactic_dependency_network.txt");
@@ -152,12 +154,20 @@ int main() {
 //	cout << "Real graph" << endl;
 //	//g.print();
 //
+
+	auto start = std::chrono::high_resolution_clock::now();
+	g.calculate_closeness_v1();
+	auto finish = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = finish - start;
+	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+
+// some inconsistencies in the example
 //	auto start = std::chrono::high_resolution_clock::now();
-//	g.calculate_closeness_v1();
+//	johnson_allpairs_dijkstra(g);
 //	auto finish = std::chrono::high_resolution_clock::now();
 //	std::chrono::duration<double> elapsed = finish - start;
 //	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
-//
+
 //
 //	cout << " Creating an ER " << endl;
 //	MyER er = MyER(g);

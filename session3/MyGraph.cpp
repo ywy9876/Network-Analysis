@@ -14,16 +14,12 @@
 #include <chrono>
 #include <omp.h>
 //#include <utility>
-#include <boost/config.hpp>
-#include <fstream>
-#include <iomanip>
-#include <boost/property_map/property_map.hpp>
-#include <boost/graph/adjacency_list.hpp>
-#include <boost/graph/johnson_all_pairs_shortest.hpp>
 
 using namespace std;
 
 #include "mydegree.cpp"
+
+
 
 typedef pair<double, int> WArc; // weighted arc
 typedef map<int, vector<WArc> > WGraph; // weighted graph
@@ -73,6 +69,7 @@ public:
 	MyGraph(){
 		n=0;
 		m=0;
+		closeness_centrality = 0;
 
 	}
 
@@ -87,6 +84,7 @@ public:
 				int sameNode = 0;
 				n = 0;
 				m = 0;
+				closeness_centrality = 0;
 
 				// read all lines of the file
 				while (getline(myfile, line)) {
@@ -217,6 +215,8 @@ public:
 			}
 		}
 	}
+
+
 
 
 	void calculate_closeness_v1() {
