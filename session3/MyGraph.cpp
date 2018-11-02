@@ -286,7 +286,7 @@ void MyGraph::print(){
 		double C = 0;
 		int count = 0;
 
-		omp_set_num_threads(50);
+		omp_set_num_threads(8);
 		#pragma omp parallel for firstprivate(count) reduction (+: C)
 		for (int idx = 0; idx < Nodes.size(); ++idx){
 

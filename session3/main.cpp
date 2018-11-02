@@ -283,6 +283,9 @@ void example_SW(){
 
 	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
 
+	default_random_engine gen (seed);
+	uniform_int_distribution<int> dist(0, g.E.size() - 1);
+
 	cout << " Creating an SW " << endl;
 	MySwitching sw = MySwitching(g, dist, gen,log(g.E.size()) + 10 );
 	cout << "m: " << sw.m << endl;
