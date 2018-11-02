@@ -47,8 +47,8 @@ void write_NH_estimation_result(MyGraph g, vector<double> xNHs, string filename)
 	ofstream myfile;
 	myfile.open ("results.txt",  ios::out | ios::app );
 
-	cout << "Result: " << filename.substr(11,20)   <<  " xA=" << g.closeness_centrality << " xNH=[";
-	myfile << "Result: " << filename.substr(11,20)    <<  " xA=" << g.closeness_centrality << " xNH=[";
+	cout << "Result: " << filename.substr(10,10)   <<  " xA=" << g.closeness_centrality << " xNH=[";
+	myfile << "Result: " << filename.substr(10,10)    <<  " xA=" << g.closeness_centrality << " xNH=[";
 
 	for (std::vector<double>::iterator it = xNHs.begin() ; it != xNHs.end(); ++it){
 		cout << *it << ", ";
@@ -61,6 +61,28 @@ void write_NH_estimation_result(MyGraph g, vector<double> xNHs, string filename)
 
 }
 
+
+void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, int seed, int rng_iteration, chrono::duration<double> timespent){
+
+	ofstream myfile;
+	myfile.open ("results.txt",  ios::out | ios::app );
+
+	cout <<  filename.substr(10,10)   <<  " xA=" << g.closeness_centrality \
+			<< " xNH=" << xNH << " t:" << timespent.count() \
+			<< " i:" << rng_iteration << " seed:" << seed \
+			<< " " << filename << endl;
+	myfile << filename.substr(10,10)  <<  " xA=" << g.closeness_centrality \
+			<< " xNH=" << xNH << " t:" << timespent.count() \
+			<< " i:" << rng_iteration << " seed:" \
+			<< seed << " " << filename << endl;
+
+	myfile.close();
+
+}
+
+
+
+
 void monteCarlo_estimation_with_ER(string filename){
 
 	MyGraph g = MyGraph(filename);
@@ -72,7 +94,7 @@ void monteCarlo_estimation_with_ER(string filename){
 	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
 
 	//with alpha= 0.05 -> T >> 1/alph = 20
-	int T = 2;
+	int T = 100;
 	vector<double> xNHs;
 
 	// seed and rng  initialization
@@ -89,7 +111,8 @@ void monteCarlo_estimation_with_ER(string filename){
 		elapsed = finish2 - start2;
 
 		xNHs.push_back(er.closeness_centrality);
-		cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
+		//cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
+		write_NH_estimation_partial_result(g, er.closeness_centrality,filename,seed,i,elapsed);
 	}
 
 	auto finish3 = std::chrono::high_resolution_clock::now();
@@ -104,7 +127,7 @@ void estimate_all_x_with_ER_NH(){
 	vector<string> dirfiles = get_directory_files("./datarepo");
 
 	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
-		monteCarlo_estimation_with_ER(*it);
+		monteCarlo_estimation_with_ER("./datarepo/"+*it);
 	}
 
 }
@@ -112,7 +135,9 @@ void estimate_all_x_with_ER_NH(){
 
 int main() {
 
-	monteCarlo_estimation_with_ER("./datarepo/1.txt");
+	//estimate_all_x_with_ER_NH();
+
+    monteCarlo_estimation_with_ER("./datarepo/1.txt");
 //	monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
 
 //	MyGraph g = MyGraph("./datarepo/1.txt");
