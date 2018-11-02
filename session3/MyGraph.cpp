@@ -1,79 +1,68 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <queue>
-#include <map>
-#include <iterator>
-#include <dirent.h>
-#include <cstring>
-#include <memory>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <random>
-#include <chrono>
-#include <omp.h>
-//#include <utility>
-
-using namespace std;
-
-#include "mydegree.cpp"
+#include "MyGraph.h"
+//#include "mydegree.h"
 
 
 
-typedef pair<double, int> WArc; // weighted arc
-typedef map<int, vector<WArc> > WGraph; // weighted graph
-/*
-struct Edge {
-  string origin;
-  string dest;
-};
-*/
-struct Node {
-  vector<string> neighbours;
-  vector<double> distances;
-};
-
-typedef map<string, Node > Graph; // unweighted graph
-typedef vector <pair<string, string> > Edges; // stores all the edges
-
-
-
-const int infinit = 100000000;
-
-
-
-template<typename T>
-std::vector<T> slice(std::vector<T> const &v, int m, int n)
+class mydegree
 {
-    auto first = v.cbegin() + m;
-    auto last = v.cbegin() + n + 1;
-
-    std::vector<T> vec(first, last);
-    return vec;
-}
-
-
-class MyGraph {
 
 public:
-	Graph G; // a dictionary which the key is the name of node (e.g a word) and the value is a adjacency list [b, c, etc.]
-	Edges E; // all the edges
-	vector<string> Nodes;// stores the words in the order of incoming
-	map<string, int> nodeIndex;// stores the correspondences between words and indices
-	map<int, string> indexNode;// stores the correspondences between indices and words
-	int n;
-	int m; // n for number of nodes, m for number of edges
-	double closeness_centrality;
+	string myNode;
 
-	MyGraph(){
+	mydegree(string& Node) :  myNode(Node) { }
+
+
+
+	//pending compare by degree of each node! -> read E and count degree
+	//  maybe; G_ER[origin].neighbours.size()
+};
+
+
+struct CompareNode
+{
+	bool operator()(mydegree & n1, mydegree & n2)
+	{
+		//cout << " comparing " << n1.myNode << " and " << n2.myNode << " " << endl;
+		if (&n1){
+			if (&(n1.myNode) && n1.myNode.size()>0){
+
+				string s1 = n1.myNode;
+				//cout << s1 << endl;
+				//cout << s1.size() << endl;
+				int val = s1.compare("a");
+				//cout << val << endl;
+				return val;
+
+			}
+			else return false;
+
+		}
+		else return false;
+
+	}
+};
+
+
+//class MyGraph {
+//
+//public:
+//	Graph G; // a dictionary which the key is the name of node (e.g a word) and the value is a adjacency list [b, c, etc.]
+//	Edges E; // all the edges
+//	vector<string> Nodes;// stores the words in the order of incoming
+//	map<string, int> nodeIndex;// stores the correspondences between words and indices
+//	map<int, string> indexNode;// stores the correspondences between indices and words
+//	int n;
+//	int m; // n for number of nodes, m for number of edges
+//	double closeness_centrality;
+
+MyGraph::MyGraph(){
 		n=0;
 		m=0;
 		closeness_centrality = 0;
 
 	}
 
-	MyGraph(const string file_name) {
+MyGraph::MyGraph(const string file_name) {
 		try {
 
 			string line;
@@ -161,7 +150,7 @@ public:
 
 
 
-	void print(){
+void MyGraph::print(){
 
 		int sameNode = 0;
 
@@ -192,7 +181,7 @@ public:
 
 
 
-	void dijkstra( int s, vector<double>& d) {
+	void MyGraph::dijkstra( int s, vector<double>& d) {
 		d = vector<double>(n, infinit); d[s] = 0;
 		vector<bool> S(n, false);
 		priority_queue<WArc, vector<WArc>, greater<WArc> > Q;
@@ -219,7 +208,7 @@ public:
 
 
 
-	void calculate_closeness_v1() {
+	void MyGraph::calculate_closeness_v1() {
 		/*
 		 *  MEAN CLOSENESS CENTRALITY
 		 *  C = 1/N * SUM{i=1,N} Ci
@@ -280,7 +269,7 @@ public:
 
 	}
 
-	double closeness_batch (vector<string>& Nodes) {
+	double MyGraph::closeness_batch (vector<string>& Nodes) {
 		/*
 		 *  MEAN CLOSENESS CENTRALITY
 		 *  C = 1/N * SUM{i=1,N} Ci
@@ -328,7 +317,7 @@ public:
 
 
 
-	void sort_Nodes (string sort_type ="shuffle"){
+	void MyGraph::sort_Nodes (string sort_type){
 
 		if (sort_type == "shuffle")
 			random_shuffle (Nodes.begin(), Nodes.end());
@@ -353,14 +342,14 @@ public:
 	//	}
 	}
 
-	void print_nodes_vector(){
+	void MyGraph::print_nodes_vector(){
 		std::cout << "myvector contains:";
 		  for (std::vector<string>::iterator it=Nodes.begin(); it!=Nodes.begin()+4; ++it)
 			std::cout << ' ' << *it;
 		  std::cout << '\n';
 	}
 
-	void calculate_closeness_v2_bounded(double xAH=0.5) {
+	void MyGraph::calculate_closeness_v2_bounded(double xAH) {
 		/*
 		 *  MEAN CLOSENESS CENTRALITY
 		 *  C = 1/N * SUM{i=1,N} Ci
@@ -444,5 +433,5 @@ public:
 	}
 
 
-};
+//};
 

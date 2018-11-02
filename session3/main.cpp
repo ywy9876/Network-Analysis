@@ -16,12 +16,15 @@
 #include <math.h> 
 //#include <utility>
 
-
-
-//#include "johnson.cpp"
-#include "MyER.cpp"
- 
 using namespace std;
+
+#include "MyGraph.h"
+#include "MyER.h"
+#include "MySwitching.h"
+//#include "johnson.cpp"
+
+ 
+
 
 const unsigned int seed = 1234567;
 uniform_int_distribution<int> dist;
@@ -70,95 +73,6 @@ void write_NH_estimation_result(MyGraph g, vector<double> xNHs, string filename)
 
 
 
-void create_switching(map<int, string>& indexNode, map<string, int>& nodeIndex, Edges E, int Q) {
-	int m = E.size();
-	int QE = Q * m;
-	int count = 0;
-	int notValid = 0;
-	int edge1, edge2;
-	string u, v, s, t;
-	map <string, char> actualEdges; // char to save space
-	for (auto edge: E) {
-		actualEdges[edge.first+edge.second] = '1';
-		actualEdges[edge.second+edge.first] = '1';
-	}
-	default_random_engine gen (seed);
-	uniform_int_distribution<int> dist(0, E.size() - 1);
-	while (count < QE) {
-		++count;
-		edge1 = dist(gen);
-		edge2 = dist(gen);
-		// we simply dont want it choose the same edge
-		while (edge1 == edge2) 
-			edge2 = dist(gen);
-		u = E[edge1].first;
-		v = E[edge1].second;
-		s = E[edge2].first;
-		t = E[edge2].second;
-		//cout << u << " " << v  << " " << s << " " << t << endl;
-		// first, check it the switching produces a loop
-		if (u == t or s == v) {
-			++notValid;
-			continue;
-		}
-		// now check if u-t already exist 
-		auto itr = actualEdges.find(u+t);
-		if (itr != actualEdges.end()) {
-			++notValid;
-			continue;
-		}
-		itr = actualEdges.find(t+u);
-		if (itr != actualEdges.end()) {
-			++notValid;
-			continue;
-		}
-		// now check if s-v already exist 
-		itr = actualEdges.find(s+v);
-		if (itr != actualEdges.end()) {
-			++notValid;
-			continue;
-		}
-		itr = actualEdges.find(v+s);
-		if (itr != actualEdges.end()) {
-			++notValid;
-			continue;
-		}
-		// all constraints satisfied, modify the vector E and actualEdges
-		// erase u+v, v+u, s+t, t+s from the map actualEdges
-		actualEdges.erase(u+v);
-		actualEdges.erase(v+u);
-		actualEdges.erase(s+t);
-		actualEdges.erase(t+s);	
-		// add u+t, t+u, s+v, v+s
-		actualEdges[u+t] = '1';
-		actualEdges[t+u] = '1';
-		actualEdges[s+v] = '1';
-		actualEdges[v+s] = '1';
-		// modify the vector E, uv -> ut, st -> sv
-		E[edge1] = make_pair(u, t);
-		E[edge2] = make_pair(s, v);
-	}
-	Graph G; //create graph using E
-	for (auto edge: E) {
-		G[edge.first].neighbours.push_back(edge.second);
-		G[edge.second].neighbours.push_back(edge.first);
-	}
-	cout << "Print Switching model" << endl;
-	for (auto itr = G.begin(); itr != G.end(); ++itr) {
-		cout << itr->first << ": ";
-		for (string neighbour : itr->second.neighbours)
-			cout << neighbour << '\t';
-		cout << endl;
-	}
-	for (auto edge: E) {
-		cout << edge.first << " -> " << edge.second << endl;
-	}
-	
-	cout << "Edges: " << E.size() << endl; 
-	cout << "QE: " << QE << endl;
-	cout << "failed switching: " << notValid << endl;
-}
-
 
 
 void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, int seed, int rng_iteration, chrono::duration<double> timespent){
@@ -181,7 +95,7 @@ void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, i
 
 
 
-void monteCarlo_estimation_with_ER(string filename){
+void monteCarlo_estimation(string filename, string htype="ER"){
 
 	MyGraph g = MyGraph(filename);
 
@@ -198,19 +112,38 @@ void monteCarlo_estimation_with_ER(string filename){
 	// seed and rng  initialization
 	default_random_engine gen (seed);
 	// a random number between 0 and number of nodes -1 because of the index of vector, no matter the value
-	uniform_int_distribution<int> dist(0, g.n-1);
+	if (htype=="ER")
+		uniform_int_distribution<int> dist(0, g.n-1);
+	else
+		uniform_int_distribution<int> dist(0, g.E.size() - 1);
 
 	for (int i=0; i < T ; i++){
-		MyER er = MyER(g, dist, gen);
+		if (htype=="ER"){
+			MyER er = MyER(g, dist, gen);
+			auto start2 = std::chrono::high_resolution_clock::now();
+			er.calculate_closeness_v2_bounded(g.closeness_centrality);
+			auto finish2 = std::chrono::high_resolution_clock::now();
+			elapsed = finish2 - start2;
 
-		auto start2 = std::chrono::high_resolution_clock::now();
-		er.calculate_closeness_v2_bounded(g.closeness_centrality);
-		auto finish2 = std::chrono::high_resolution_clock::now();
-		elapsed = finish2 - start2;
+			xNHs.push_back(er.closeness_centrality);
+			//cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
+			write_NH_estimation_partial_result(g, er.closeness_centrality,filename,seed,i,elapsed);
 
-		xNHs.push_back(er.closeness_centrality);
-		//cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
-		write_NH_estimation_partial_result(g, er.closeness_centrality,filename,seed,i,elapsed);
+		} else{
+			MySwitching sw = MySwitching(g, dist, gen, log(g.E.size()) + 0 );
+
+			auto start2 = std::chrono::high_resolution_clock::now();
+			sw.calculate_closeness_v2_bounded(g.closeness_centrality);
+			auto finish2 = std::chrono::high_resolution_clock::now();
+			elapsed = finish2 - start2;
+
+			xNHs.push_back(sw.closeness_centrality);
+			//cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
+			write_NH_estimation_partial_result(g, sw.closeness_centrality,filename,seed,i,elapsed);
+
+		}
+
+
 	}
 
 	auto finish3 = std::chrono::high_resolution_clock::now();
@@ -219,6 +152,19 @@ void monteCarlo_estimation_with_ER(string filename){
 
 	write_NH_estimation_result(g,xNHs,filename);
 }
+
+void monteCarlo_estimation_with_ER(string filename){
+	return monteCarlo_estimation(filename,"ER");
+}
+
+void monteCarlo_estimation_with_SW(string filename){
+	return monteCarlo_estimation(filename,"SW");
+}
+
+
+
+//-----------------------_EXAMPLES_-----------------------------------------
+
 
 void estimate_all_x_with_ER_NH(){
 
@@ -240,6 +186,11 @@ void example_estimate_1_with_ER(){
 
 void example_estimate_basque_with_ER(){
 	monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
+}
+
+void example_estimate_basque_with_SW(){
+
+	monteCarlo_estimation_with_SW("./datarepo/Basque_syntactic_dependency_network.txt");
 }
 
 void example_estimate_some_manually_with_ER(){
@@ -328,12 +279,30 @@ void example_ER(){
 }
 
 
+void example_SW(){
+
+	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+
+	cout << " Creating an SW " << endl;
+	MySwitching sw = MySwitching(g, dist, gen,log(g.E.size()) + 10 );
+	cout << "m: " << sw.m << endl;
+	sw.print();
+
+	auto start = std::chrono::high_resolution_clock::now();
+	sw.calculate_closeness_v1();
+	auto finish = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = finish - start;
+	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+}
+
 int main() {
 
 //	example_estimate_all_x_with_ER(); // too long to execute, better a single file approach
 
-	example_estimate_1_with_ER();
+//	example_estimate_1_with_ER();
 //	example_estimate_basque_with_ER();
+	example_SW();
+//	example_estimate_basque_with_SW();
 //	example_estimate_some_manually_with_ER();
 
 //	example_create_graph_1();

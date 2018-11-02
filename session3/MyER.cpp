@@ -1,32 +1,12 @@
-#include <iostream>
-#include <string>
-#include <vector>
-#include <queue>
-#include <map>
-#include <iterator>
-#include <dirent.h>
-#include <cstring>
-#include <memory>
-#include <fstream>
-#include <sstream>
-#include <algorithm>
-#include <random>
-#include <chrono>
-#include <omp.h>
+#include "MyER.h"
 
-//#include <utility>
+//class MyER : public MyGraph {
 
-using namespace std;
-
-#include "MyGraph.cpp"
-
-class MyER : public MyGraph {
-
-public:
-
-	map <string, char> E_ER; // key composed by origin+destination words
-
-	MyER(const MyGraph& g, uniform_int_distribution<int>& dist, default_random_engine& gen) {
+//public:
+//
+//	map <string, char> E_ER; // key composed by origin+destination words
+//
+	MyER::MyER(const MyGraph& g, uniform_int_distribution<int>& dist, default_random_engine& gen) {
 
 
 		//G is not initialized
@@ -79,7 +59,7 @@ public:
 	}
 
 
-	void printER (){
+	void MyER::printER (){
 		cout << "Print ER.G" << endl;
 		for (auto itr = G.begin(); itr != G.end(); ++itr) {
 			cout << itr->first << ": ";
@@ -89,7 +69,7 @@ public:
 		}
 	}
 
-	void printNodeIndex(){
+	void MyER::printNodeIndex(){
 		std::map<std::string, int>::iterator it = nodeIndex.begin();
 		while(it != nodeIndex.end())
 		{
@@ -98,7 +78,7 @@ public:
 		}
 	}
 
-	void printE_ER(){
+	void MyER::printE_ER(){
 		map <string, char>::iterator it2 = E_ER.begin();
 		while(it2 != E_ER.end())
 		{
@@ -107,4 +87,4 @@ public:
 		}
 	}
 
-};
+//};
