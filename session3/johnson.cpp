@@ -260,10 +260,11 @@ int testj2(std::string file_name){
 	//---------------------------------------------------
 
 
+
 	  using namespace boost;
 	  typedef adjacency_list<vecS, vecS, directedS, no_property,
 		property< edge_weight_t, int, property< edge_weight2_t, int > > > Graph;
-	  const int V = 12207;
+	  const int V = n;
 	  // basque n: 12207, m: 25541 ,
 	  typedef std::pair < int, int >Edge;
 	  const std::size_t EE = edge_vect.size();
@@ -301,30 +302,53 @@ int testj2(std::string file_name){
 //		  cout << "weights[" << jj << "]=" << weights[jj] << endl;
 //	  }
 	  int *wp = weights;
-//
-//	  graph_traits < Graph >::edge_iterator e, e_end;
-//	  for (boost::tie(e, e_end) = edges(g); e != e_end; ++e)
-//		w[*e] = *wp++;
-//
-//	  std::vector < int >d(V, (std::numeric_limits < int >::max)());
-//	  int D[V][V];
-//	  johnson_all_pairs_shortest_paths(g, D, distance_map(&d[0]));
-//
-//	  std::cout << "       ";
-//	  for (int k = 0; k < V; ++k)
-//		std::cout << std::setw(5) << k;
-//	  std::cout << std::endl;
-//	  for (int i = 0; i < V; ++i) {
-//		std::cout << std::setw(3) << i << " -> ";
-//		for (int j = 0; j < V; ++j) {
-//		  if (D[i][j] == (std::numeric_limits<int>::max)())
-//			std::cout << std::setw(5) << "inf";
-//		  else
-//			std::cout << std::setw(5) << D[i][j];
-//		}
-//		std::cout << std::endl;
-//	  }
-//
+
+	  graph_traits < Graph >::edge_iterator e, e_end;
+	  for (boost::tie(e, e_end) = edges(g); e != e_end; ++e)
+	  	w[*e] = *wp++;
+
+	  std::vector < int >d(V, (std::numeric_limits < int >::max)());
+
+	  int** D = new int*[V];
+	  for (int jj=0; jj<V; jj++){
+		  D[jj]= new int[V];
+	  }
+	  D[0][0] = 4;
+	  std::cout << D[0] << endl;
+	  std::cout << D[1] << endl;
+	  D[2][2]=3;
+	  std::cout << D[2][2] << endl;
+
+
+	  //int D[V][V];
+	  auto start = std::chrono::high_resolution_clock::now();
+
+	  johnson_all_pairs_shortest_paths(g, D, distance_map(&d[0]));
+
+	auto finish = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = finish - start;
+	cout << "Time spent in calculating johnson all pairs dijkstra: " << elapsed.count() << "s" << endl;
+
+	  std::cout << D[2][2] << endl;
+
+
+
+	  std::cout << "       ";
+	  for (int k = 0; k < 20; ++k)
+		std::cout << std::setw(5) << k;
+
+	  std::cout << std::endl;
+	  for (int i = 0; i < 20; ++i) {
+		std::cout << std::setw(3) << i << " -> ";
+		for (int j = 0; j < 20; ++j) {
+		  if (D[i][j] == (std::numeric_limits<int>::max)())
+			std::cout << std::setw(5) << "inf";
+		  else
+			std::cout << std::setw(5) << D[i][j];
+		}
+		std::cout << std::endl;
+	  }
+
 //	  std::ofstream fout("figs/johnson-eg.dot");
 //	  fout << "digraph A {\n"
 //		<< "  rankdir=LR\n"
