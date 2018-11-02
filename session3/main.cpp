@@ -82,12 +82,12 @@ void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, i
 
 	cout <<  filename.substr(10,10)   <<  " xA=" << g.closeness_centrality \
 			<< " xNH=" << xNH << " t:" << timespent.count() \
-			<< " htype: " << htype \\
+			<< " htype: " << htype \
 			<< " i:" << rng_iteration << " seed:" << seed \
 			<< " " << filename << endl;
 	myfile << filename.substr(10,10)  <<  " xA=" << g.closeness_centrality \
 			<< " xNH=" << xNH << " t:" << timespent.count() \
-			<< " htype: " << htype \\
+			<< " htype: " << htype \
 			<< " i:" << rng_iteration << " seed:" \
 			<< seed << " " << filename << endl;
 
