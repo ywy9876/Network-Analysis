@@ -443,7 +443,12 @@ void MyGraph::print(){
 			string a = p.first;
 			string b = p.second;
 			edge_vect.push_back(Edge(nodeIndex[b],nodeIndex[a]));
+			edge_vect.push_back(Edge(nodeIndex[a],nodeIndex[b]));
 		}
+
+//		cout << "Debugging edge_vect" << endl;
+//		for (auto p : edge_vect)
+//			cout << indexNode[p.first] << "(" << p.first << ") - " << indexNode[p.second] << "(" << p.second << ")" << endl;
 
 		return edge_vect;
 

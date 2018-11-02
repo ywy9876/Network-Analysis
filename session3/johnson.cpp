@@ -133,12 +133,12 @@ auto finish = std::chrono::high_resolution_clock::now();
 std::chrono::duration<double> elapsed = finish - start;
 cout << "Time spent in calculating johnson all pairs dijkstra: " << elapsed.count() << "s" << endl;
 	  std::cout << "       ";
-	  for (int k = 0; k < V; ++k)
+	  for (int k = 0; k < std::min(V,20); ++k)
 		std::cout << std::setw(5) << k;
 	  std::cout << std::endl;
-	  for (int i = 0; i < V; ++i) {
+	  for (int i = 0; i < std::min(V,20); ++i) {
 		std::cout << std::setw(3) << i << " -> ";
-		for (int j = 0; j < V; ++j) {
+		for (int j = 0; j < std::min(V,20) ; ++j) {
 		  if (D[i][j] == (std::numeric_limits<int>::max)())
 			std::cout << std::setw(5) << "inf";
 		  else
