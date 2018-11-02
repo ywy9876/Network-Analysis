@@ -21,7 +21,7 @@ using namespace std;
 #include "MyGraph.h"
 #include "MyER.h"
 #include "MySwitching.h"
-//#include "johnson.h"
+#include "johnson.h"
 
  
 
@@ -100,10 +100,11 @@ void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, i
 void monteCarlo_estimation(string filename, string htype="ER"){
 
 	MyGraph g = MyGraph(filename);
+	g.print();
 
 	auto start = std::chrono::high_resolution_clock::now();
-	//g.calculate_closeness_v1();
-	g.closeness_centrality = 0.269719;
+	g.calculate_closeness_v1();
+	//g.closeness_centrality = 0.269719; // only for Basque lang
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
 	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
@@ -198,7 +199,9 @@ void example_estimate_basque_with_ER(){
 
 void example_estimate_basque_with_SW(){
 
-	monteCarlo_estimation_with_SW("./datarepo/Basque_syntactic_dependency_network.txt");
+	//monteCarlo_estimation_with_SW("./datarepo/Basque_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_SW("./datarepo/Arabic_syntactic_dependency_network.txt");
+
 }
 
 void example_estimate_some_manually_with_ER(){
@@ -225,6 +228,7 @@ void example_create_graph_1(){
 void example_create_graph_basque(){
 	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
 
+	g.print();
 	auto start = std::chrono::high_resolution_clock::now();
 	g.calculate_closeness_v1();
 	auto finish = std::chrono::high_resolution_clock::now();
@@ -314,7 +318,8 @@ int main() {
 //	example_estimate_basque_with_ER();
 //	example_SW();
 	//testj();
-	example_estimate_basque_with_SW();
+//	example_estimate_basque_with_SW();
+
 //	example_estimate_some_manually_with_ER();
 
 //	example_create_graph_1();
@@ -324,6 +329,9 @@ int main() {
 // example_johnson_all_pairs();
 
 // example_ER();
+
+	cout << "calling func " << endl;
+	testj2("./datarepo/Basque_syntactic_dependency_network.txt");
 
 
 }
