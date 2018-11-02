@@ -202,11 +202,6 @@ int testj2(std::string file_name){
 	  for (int jj=0; jj<V; jj++){
 		  D[jj]= new int[V];
 	  }
-	  D[0][0] = 4;
-	  std::cout << D[0] << endl;
-	  std::cout << D[1] << endl;
-	  D[2][2]=3;
-	  std::cout << D[2][2] << endl;
 
 
 	  //int D[V][V];
@@ -251,6 +246,15 @@ int testj2(std::string file_name){
 //		  << "[label=" << get(edge_weight, g)[*ei] << "]\n";
 //
 //	  fout << "}\n";
+
+
+
+	  for (int jj=0; jj<V; jj++){
+		  delete [] D[jj];
+	  }
+	  delete [] D;
+
+
 	  return 0;
 
 

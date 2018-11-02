@@ -175,6 +175,17 @@ void monteCarlo_estimation_with_SW(string filename){
 //-----------------------_EXAMPLES_-----------------------------------------
 
 
+void compute_all_x(){
+
+	vector<string> dirfiles = get_directory_files("./datarepo");
+
+	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
+		cout << "./datarepo/"+*it << endl;
+		testj2("./datarepo/"+*it);
+	}
+
+}
+
 void estimate_all_x_with_ER_NH(){
 
 	vector<string> dirfiles = get_directory_files("./datarepo");
@@ -330,9 +341,9 @@ int main() {
 
 // example_ER();
 
-	cout << "calling func " << endl;
-	testj2("./datarepo/Basque_syntactic_dependency_network.txt");
+//	testj2("./datarepo/Basque_syntactic_dependency_network.txt");
 
+	compute_all_x();
 
 }
 
