@@ -40,7 +40,7 @@ typedef vector <pair<string, string> > Edges; // stores all the edges
 
 const int infinit = 100000000;
 
-
+typedef std::pair < int, int >Edge;
 
 template<typename T>
 std::vector<T> slice(std::vector<T> const &v, int m, int n)
@@ -73,6 +73,7 @@ public:
 	void sort_Nodes (string sort_type ="shuffle");
 	void print_nodes_vector();
 	void calculate_closeness_v2_bounded(double xAH=0.5);
+	vector<Edge> transform_to_edge_vect();
 
 
 

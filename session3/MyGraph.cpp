@@ -435,3 +435,16 @@ void MyGraph::print(){
 
 //};
 
+
+	vector<Edge> MyGraph::transform_to_edge_vect(){
+
+		vector<Edge> edge_vect;
+		for (auto p : E){
+			string a = p.first;
+			string b = p.second;
+			edge_vect.push_back(Edge(nodeIndex[b],nodeIndex[a]));
+		}
+
+		return edge_vect;
+
+	}

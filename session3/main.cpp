@@ -234,6 +234,9 @@ void example_create_graph_1(){
 	std::chrono::duration<double> elapsed = finish - start;
 	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
 
+
+	testj2(g.n, g.transform_to_edge_vect());
+
 }
 
 void example_create_graph_basque(){
@@ -333,7 +336,7 @@ int main() {
 
 //	example_estimate_some_manually_with_ER();
 
-//	example_create_graph_1();
+	example_create_graph_1();
 //	example_create_graph_basque();
 //  example_create_graph_others();
 
@@ -342,7 +345,7 @@ int main() {
 // example_ER();
 
 	//read_graph2("./datarepo/Basque_syntactic_dependency_network.txt");
-	read_graph2("./datarepo/1.txt");
+//	read_graph2("./datarepo/1.txt");
 
 //	compute_all_x();
 
