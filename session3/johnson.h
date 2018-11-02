@@ -30,10 +30,8 @@ typedef std::vector <std::pair<std::string, std::string> > Edges2; // stores all
 
 typedef std::pair < int, int >Edge;
 
-void read_graph(const std::string file_name);
+
 int testj2(std::string file_name);
-int testj();
-//void johnson_allpairs_dijkstra(std::vector<std::pair<std::string,std::string>> edge_vect, int n, std::map<std::string,int> indexNode )();
 
 
 #endif /* JOHNSON_H_ */
