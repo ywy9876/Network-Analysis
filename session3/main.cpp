@@ -21,7 +21,7 @@ using namespace std;
 #include "MyGraph.h"
 #include "MyER.h"
 #include "MySwitching.h"
-//#include "johnson.cpp"
+//#include "johnson.h"
 
  
 
@@ -75,17 +75,19 @@ void write_NH_estimation_result(MyGraph g, vector<double> xNHs, string filename)
 
 
 
-void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, int seed, int rng_iteration, chrono::duration<double> timespent){
+void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, int seed, int rng_iteration, chrono::duration<double> timespent, string htype){
 
 	ofstream myfile;
 	myfile.open ("results.txt",  ios::out | ios::app );
 
 	cout <<  filename.substr(10,10)   <<  " xA=" << g.closeness_centrality \
 			<< " xNH=" << xNH << " t:" << timespent.count() \
+			<< " htype: " << htype \\
 			<< " i:" << rng_iteration << " seed:" << seed \
 			<< " " << filename << endl;
 	myfile << filename.substr(10,10)  <<  " xA=" << g.closeness_centrality \
 			<< " xNH=" << xNH << " t:" << timespent.count() \
+			<< " htype: " << htype \\
 			<< " i:" << rng_iteration << " seed:" \
 			<< seed << " " << filename << endl;
 
@@ -100,22 +102,25 @@ void monteCarlo_estimation(string filename, string htype="ER"){
 	MyGraph g = MyGraph(filename);
 
 	auto start = std::chrono::high_resolution_clock::now();
-	g.calculate_closeness_v1();
+	//g.calculate_closeness_v1();
+	g.closeness_centrality = 0.269719;
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
 	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
 
+
+
 	//with alpha= 0.05 -> T >> 1/alph = 20
-	int T = 100;
+	int T = 40;
 	vector<double> xNHs;
 
 	// seed and rng  initialization
 	default_random_engine gen (seed);
 	// a random number between 0 and number of nodes -1 because of the index of vector, no matter the value
+	uniform_int_distribution<int> dist(0, g.E.size() - 1);
 	if (htype=="ER")
 		uniform_int_distribution<int> dist(0, g.n-1);
-	else
-		uniform_int_distribution<int> dist(0, g.E.size() - 1);
+
 
 	for (int i=0; i < T ; i++){
 		if (htype=="ER"){
@@ -127,10 +132,13 @@ void monteCarlo_estimation(string filename, string htype="ER"){
 
 			xNHs.push_back(er.closeness_centrality);
 			//cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
-			write_NH_estimation_partial_result(g, er.closeness_centrality,filename,seed,i,elapsed);
+			write_NH_estimation_partial_result(g, er.closeness_centrality,filename,seed,i,elapsed,htype);
 
 		} else{
 			MySwitching sw = MySwitching(g, dist, gen, log(g.E.size()) + 0 );
+
+			cout << "Generated Switching model network " << i << endl;
+
 
 			auto start2 = std::chrono::high_resolution_clock::now();
 			sw.calculate_closeness_v2_bounded(g.closeness_centrality);
@@ -139,7 +147,7 @@ void monteCarlo_estimation(string filename, string htype="ER"){
 
 			xNHs.push_back(sw.closeness_centrality);
 			//cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
-			write_NH_estimation_partial_result(g, sw.closeness_centrality,filename,seed,i,elapsed);
+			write_NH_estimation_partial_result(g, sw.closeness_centrality,filename,seed,i,elapsed,htype);
 
 		}
 
@@ -304,8 +312,9 @@ int main() {
 
 //	example_estimate_1_with_ER();
 //	example_estimate_basque_with_ER();
-	example_SW();
-//	example_estimate_basque_with_SW();
+//	example_SW();
+	//testj();
+	example_estimate_basque_with_SW();
 //	example_estimate_some_manually_with_ER();
 
 //	example_create_graph_1();
