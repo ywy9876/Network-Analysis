@@ -50,11 +50,13 @@
 			s = E[edge2].first;
 			t = E[edge2].second;
 			cout << u << " " << v  << " " << s << " " << t << endl;
-			// first, check it the switching produces a loop
+			// first, check if the switching produces a loop
 			if (u == t or s == v) {
 				++notValid;
 				continue;
 			}
+			// v = t means no change, and also u = s
+			if (v == t or u == s) continue;
 			// now check if u-t already exist
 			auto itr = actualEdges.find(u+t);
 			if (itr != actualEdges.end()) {
@@ -80,14 +82,14 @@
 			// all constraints satisfied, modify the vector E and actualEdges
 			// erase u+v, v+u, s+t, t+s from the map actualEdges
 			actualEdges.erase(u+v);
-			actualEdges.erase(v+u);
+			//actualEdges.erase(v+u);
 			actualEdges.erase(s+t);
-			actualEdges.erase(t+s);
+			//actualEdges.erase(t+s);
 			// add u+t, t+u, s+v, v+s
 			actualEdges[u+t] = '1';
-			actualEdges[t+u] = '1';
+			//actualEdges[t+u] = '1';
 			actualEdges[s+v] = '1';
-			actualEdges[v+s] = '1';
+			//actualEdges[v+s] = '1';
 			// modify the vector E, uv -> ut, st -> sv
 			E[edge1] = make_pair(u, t);
 			E[edge2] = make_pair(s, v);
