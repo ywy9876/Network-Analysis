@@ -124,6 +124,7 @@ MyGraph::MyGraph(const string file_name) {
 								nodeIndex[b] = n;
 								indexNode[n] = b;
 								++n;
+								++m;
 							}
 							// if the dictionary already contains word b
 							else {

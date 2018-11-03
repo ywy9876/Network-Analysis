@@ -1,0 +1,10 @@
+/1.txt xA=0.8
+/Basque_sy xA=0.269719
+/Arabic_sy xA=0.326458
+/Chinese_s xA=0.326454
+/Greek_syn xA=0.314717
+/Turkish_s xA=0.360334
+/Italian_s xA=0.32782
+/English_s xA=0.343509
+/Hungarian xA=0.288346
+/Catalan_s xA=0.34101

@@ -126,8 +126,8 @@ johnson::johnson(int n, std::vector<Edge> edge_vect  ){
 //		  cout << edge_array[jj].first << " - " << edge_array[jj].second << endl;
 //	  }
 
-	  cout << " edge_vect.size()= " << edge_vect.size() << endl;
-	  cout << " edge_array.size() = " << sizeof(&edge_array) / sizeof(Edge) << endl;
+//	  cout << " edge_vect.size()= " << edge_vect.size() << endl;
+//	  cout << " edge_array.size() = " << sizeof(&edge_array) / sizeof(Edge) << endl;
 	  //printEdgeArray();
 }
 

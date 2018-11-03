@@ -170,27 +170,33 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 	if (howmany<1)
 		howmany = T;
 
+
 	MyGraph g = MyGraph(filename);
 	//g.print();
 
-	// closeness centrality for real network = xAH
-	auto start = std::chrono::high_resolution_clock::now();
+	//extract computed closeness from real_closeness.txt file
+	map <string, double> closenesses = read_closeness_from_file("./real_closeness.txt");
+	try {
+		string key = filename.substr(10,10);
+		g.closeness_centrality = closenesses.at(key);
+	} catch (const std::out_of_range& e) {
 
-	//cout << " Computing closeness_centrality for " << filename << endl;
-	cout << " Closeness_Centrality verification: " << g.m << " >? " << 500000 << endl;
-	if (dijkstra_version == "johnson" && g.m < 500000)
-		g.calculate_closeness_v3();
-	else
-		cout << " Executing alternative version of closeness_centrality";
-		g.calculate_closeness_v1();
+		//If it is not saved, then we need to compute it
+		auto start = std::chrono::high_resolution_clock::now();
 
-	auto finish = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> elapsed = finish - start;
-	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+		//cout << " Computing closeness_centrality for " << filename << endl;
+		cout << " Closeness_Centrality verification: " << g.m << " >? " << 500000 << endl;
+		if (dijkstra_version == "johnson" && g.m < 500000){
+			g.calculate_closeness_v3();
+		} else {
+			cout << " Executing alternative version of closeness_centrality";
+			g.calculate_closeness_v1();
+		}
 
-
-
-
+		auto finish = std::chrono::high_resolution_clock::now();
+		std::chrono::duration<double> elapsed = finish - start;
+		cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+	}
 
 	// seed and rng  initialization
 	default_random_engine gen (seed);
@@ -266,6 +272,86 @@ void monteCarlo_estimation_with_SW(string filename, int skip=0){
 	return monteCarlo_estimation(filename,"SW",skip);
 }
 
+
+ map <string, double> read_closeness_from_file (string file_name){
+	 	/*
+	 	 * Reads from the real_closeness.txt file
+	 	 * the values of the closeness for each real network
+	 	 *
+	 	 *Use: avoid recomputing them in subsequent montecarlo estimations
+	 	 */
+	 	map <string, double> closenessIndex;
+
+	 	std::string line;
+	 	std::ifstream myfile(file_name);
+	 	if (myfile.is_open()) {
+	 		while (std::getline(myfile, line)) {
+	 			// get line
+	 			std::istringstream iss(line);
+
+	 			// parse fields: first(name)-a1, htype-a6, and i: -a7
+	 			//discard line if not correct
+	 			std::string a1, a2;
+	 			if (!(iss >> a1 >> a2))
+	 				continue;
+
+	 			if (a2.length() < 1 )
+	 				continue;
+
+	 			double a2b = stod(a2.substr(3,20));
+
+	 			//save into map
+	 			closenessIndex[a1]=a2b;
+	 		}
+	 	}
+	 	return closenessIndex;
+	 }
+
+void save_closeness_to_file(MyGraph g, string filename){
+
+	ofstream myfile;
+	myfile.open ("real_closeness.txt",  ios::out | ios::app );
+
+	cout << filename.substr(10,10)   <<  " xA=" << g.closeness_centrality << endl;
+	myfile << filename.substr(10,10)    <<  " xA=" << g.closeness_centrality << endl;
+
+	myfile.close();
+}
+
+void compute_real_closeness(string filename){
+
+	MyGraph g = MyGraph(filename);
+	//g.print();
+
+	auto start = std::chrono::high_resolution_clock::now();
+
+	//cout << " Computing closeness_centrality for " << filename << endl;
+	//cout << " Closeness_Centrality verification: " << g.m << " >? " << 500000 << endl;
+	if (g.m < 500000){
+		cout << "    ->Executing johnson allpairs dijkstra version of closeness_centrality";
+		g.calculate_closeness_v3();
+	} else {
+		cout << "    ->Executing alternative version of closeness_centrality";
+		g.calculate_closeness_v1();
+	}
+
+	auto finish = std::chrono::high_resolution_clock::now();
+	std::chrono::duration<double> elapsed = finish - start;
+	cout << "    ->Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+
+	save_closeness_to_file(g,filename);
+
+}
+
+void compute_all_real_closeness(){
+	vector<string> dirfiles = get_directory_files("./datarepo");
+	random_shuffle (dirfiles.begin(), dirfiles.end());
+	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
+		cout << "./datarepo/"+*it << endl;
+		compute_real_closeness("./datarepo/"+*it);
+	}
+
+}
 
 
 //-----------------------_EXAMPLES_-----------------------------------------
@@ -462,7 +548,8 @@ void example_estimate_some_manually(){
 
 int main() {
 
-	example_estimate_some_manually();
+	compute_all_real_closeness();
+	//example_estimate_some_manually();
 
 }
 
