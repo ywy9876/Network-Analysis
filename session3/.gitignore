@@ -1,5 +1,8 @@
-./*.txt
-./*.exe
-
+*.o
+*.exe
+testBoost
+testBoost.cpp
+/metadata/*
+session3
 /Debug/
 /Release/
