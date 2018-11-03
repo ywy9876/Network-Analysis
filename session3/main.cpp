@@ -224,7 +224,7 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 
 		//cout << " Computing closeness_centrality for " << filename << endl;
 		cout << " Closeness_Centrality verification: " << g.m << " >? " << 500000 << endl;
-		if (dijkstra_version == "johnson" && g.m < 500000){
+		if (dijkstra_version == "johnson" && g.E.size() < 500000){
 			g.calculate_closeness_v3();
 		} else {
 			cout << " Executing alternative version of closeness_centrality";
@@ -254,13 +254,16 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 
 			cout << "Generating ER model network " << i << endl;
 			MyER er = MyER(g, dist, gen);
+			cout << "m value?:"  << er.m << endl;
+			cout << " E.size:" << er.E.size() << endl;
 
-			if (dijkstra_version == "johnson")
+			if (dijkstra_version == "johnson" && er.E.size() < 500000)
 				er.calculate_closeness_v3();
-			else if (dijkstra_version == "bounded")
-				er.calculate_closeness_v2_bounded(g.closeness_centrality);
-			else
+			else if (dijkstra_version == "total")
 				er.calculate_closeness_v1();
+			else
+				er.calculate_closeness_v2_bounded(g.closeness_centrality);
+
 
 
 			auto finish2 = std::chrono::high_resolution_clock::now();
@@ -276,12 +279,16 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 			cout << "Generating Switching model network " << i << endl;
 			MySwitching sw = MySwitching(g, dist, gen, log(g.E.size()) + 0 );
 
-			if (dijkstra_version == "johnson")
+			cout << "m value?:"  << sw.m << endl;
+			cout << " E.size:" << sw.E.size() << endl;
+
+			if (dijkstra_version == "johnson" && sw.E.size() < 500000)
 				sw.calculate_closeness_v3();
 			else if (dijkstra_version == "bounded")
-				sw.calculate_closeness_v2_bounded(g.closeness_centrality);
-			else
 				sw.calculate_closeness_v1();
+			else
+				sw.calculate_closeness_v2_bounded(g.closeness_centrality);
+
 
 
 			auto finish2 = std::chrono::high_resolution_clock::now();
@@ -532,6 +539,14 @@ void example_estimate_some_manually(){
 		monteCarlo_estimation("./datarepo/Chinese_syntactic_dependency_network.txt","ER", 0, 1);
 		monteCarlo_estimation("./datarepo/English_syntactic_dependency_network.txt","SW", 0, 1);
 		monteCarlo_estimation("./datarepo/English_syntactic_dependency_network.txt","ER", 0, 1);
+		monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 1);
+		monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","ER", 0, 1);
+		monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 1);
+		monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","ER", 0, 1);
+		monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","SW", 0, 1);
+		monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","ER", 0, 1);
+		monteCarlo_estimation("./datarepo/Hungarian_syntactic_dependency_network.txt","SW", 0, 1);
+		monteCarlo_estimation("./datarepo/Hungarian_syntactic_dependency_network.txt","ER", 0, 1);
 	}
 
 //	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 1);
