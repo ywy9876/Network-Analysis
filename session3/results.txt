@@ -715,3 +715,59 @@ Result: /Arabic_sy xA=0.326458 xNH=[0.41789, 0.41795, 0.418019, 0.417733, 0.4178
 Result: /Catalan_s xA=0.34101 xNH=[0.428803, ]
 /Catalan_s xA=0.34101 xNH=0.500161 t:437.684 htype: ER i:1 seed:1234567 ./datarepo/Catalan_syntactic_dependency_network.txt
 Result: /Catalan_s xA=0.34101 xNH=[0.500161, ]
+/Catalan_s xA=0.34101 xNH=0.428464 t:469.006 htype: SW i:2 seed:1234567 ./datarepo/Catalan_syntactic_dependency_network.txt
+Result: /Catalan_s xA=0.34101 xNH=[0.428464, ]
+/Catalan_s xA=0.34101 xNH=0.500161 t:448.888 htype: ER i:2 seed:1234567 ./datarepo/Catalan_syntactic_dependency_network.txt
+Result: /Catalan_s xA=0.34101 xNH=[0.500161, ]
+/Chinese_s xA=0.326454 xNH=0.429862 t:508.308 htype: SW i:1 seed:1234567 ./datarepo/Chinese_syntactic_dependency_network.txt
+Result: /Chinese_s xA=0.326454 xNH=[0.429862, ]
+/Chinese_s xA=0.326454 xNH=0.50013 t:483.85 htype: ER i:1 seed:1234567 ./datarepo/Chinese_syntactic_dependency_network.txt
+Result: /Chinese_s xA=0.326454 xNH=[0.50013, ]
+/English_s xA=0.343509 xNH=0.441724 t:319.696 htype: SW i:1 seed:1234567 ./datarepo/English_syntactic_dependency_network.txt
+Result: /English_s xA=0.343509 xNH=[0.441724, ]
+/English_s xA=0.343509 xNH=0.500245 t:343.391 htype: ER i:1 seed:1234567 ./datarepo/English_syntactic_dependency_network.txt
+Result: /English_s xA=0.343509 xNH=[0.500245, ]
+/Italian_s xA=0.32782 xNH=0.449142 t:59.357 htype: SW i:1 seed:1234567 ./datarepo/Italian_syntactic_dependency_network.txt
+Result: /Italian_s xA=0.32782 xNH=[0.449142, ]
+/Italian_s xA=0.32782 xNH=0.500312 t:56.7952 htype: ER i:1 seed:1234567 ./datarepo/Italian_syntactic_dependency_network.txt
+Result: /Italian_s xA=0.32782 xNH=[0.500312, ]
+/Greek_syn xA=0.314717 xNH=0.419246 t:45.2038 htype: SW i:1 seed:1234567 ./datarepo/Greek_syntactic_dependency_network.txt
+Result: /Greek_syn xA=0.314717 xNH=[0.419246, ]
+/Greek_syn xA=0.314717 xNH=0.500299 t:39.7146 htype: ER i:1 seed:1234567 ./datarepo/Greek_syntactic_dependency_network.txt
+Result: /Greek_syn xA=0.314717 xNH=[0.500299, ]
+/Turkish_s xA=0.360334 xNH=0.499066 t:77.2596 htype: SW i:1 seed:1234567 ./datarepo/Turkish_syntactic_dependency_network.txt
+Result: /Turkish_s xA=0.360334 xNH=[0.499066, ]
+/Turkish_s xA=0.360334 xNH=0.500148 t:78.1238 htype: ER i:1 seed:1234567 ./datarepo/Turkish_syntactic_dependency_network.txt
+Result: /Turkish_s xA=0.360334 xNH=[0.500148, ]
+/Hungarian xA=0.288346 xNH=0.416375 t:345.365 htype: SW i:1 seed:1234567 ./datarepo/Hungarian_syntactic_dependency_network.txt
+Result: /Hungarian xA=0.288346 xNH=[0.416375, ]
+/Hungarian xA=0.288346 xNH=0.500101 t:304.229 htype: ER i:1 seed:1234567 ./datarepo/Hungarian_syntactic_dependency_network.txt
+Result: /Hungarian xA=0.288346 xNH=[0.500101, ]
+/Catalan_s xA=0.34101 xNH=0.428803 t:451.26 htype: SW i:3 seed:1234567 ./datarepo/Catalan_syntactic_dependency_network.txt
+Result: /Catalan_s xA=0.34101 xNH=[0.428803, ]
+/Catalan_s xA=0.34101 xNH=0.500161 t:436.928 htype: ER i:3 seed:1234567 ./datarepo/Catalan_syntactic_dependency_network.txt
+Result: /Catalan_s xA=0.34101 xNH=[0.500161, ]
+/Chinese_s xA=0.326454 xNH=0.42986 t:500.094 htype: SW i:2 seed:1234567 ./datarepo/Chinese_syntactic_dependency_network.txt
+Result: /Chinese_s xA=0.326454 xNH=[0.42986, ]
+/Chinese_s xA=0.326454 xNH=0.50013 t:483.967 htype: ER i:2 seed:1234567 ./datarepo/Chinese_syntactic_dependency_network.txt
+Result: /Chinese_s xA=0.326454 xNH=[0.50013, ]
+/English_s xA=0.343509 xNH=0.441946 t:319.759 htype: SW i:2 seed:1234567 ./datarepo/English_syntactic_dependency_network.txt
+Result: /English_s xA=0.343509 xNH=[0.441946, ]
+/English_s xA=0.343509 xNH=0.500245 t:338.779 htype: ER i:2 seed:1234567 ./datarepo/English_syntactic_dependency_network.txt
+Result: /English_s xA=0.343509 xNH=[0.500245, ]
+/Italian_s xA=0.32782 xNH=0.449243 t:58.3875 htype: SW i:2 seed:1234567 ./datarepo/Italian_syntactic_dependency_network.txt
+Result: /Italian_s xA=0.32782 xNH=[0.449243, ]
+/Italian_s xA=0.32782 xNH=0.500312 t:55.9288 htype: ER i:2 seed:1234567 ./datarepo/Italian_syntactic_dependency_network.txt
+Result: /Italian_s xA=0.32782 xNH=[0.500312, ]
+/Greek_syn xA=0.314717 xNH=0.419571 t:44.7841 htype: SW i:2 seed:1234567 ./datarepo/Greek_syntactic_dependency_network.txt
+Result: /Greek_syn xA=0.314717 xNH=[0.419571, ]
+/Greek_syn xA=0.314717 xNH=0.500299 t:39.4737 htype: ER i:2 seed:1234567 ./datarepo/Greek_syntactic_dependency_network.txt
+Result: /Greek_syn xA=0.314717 xNH=[0.500299, ]
+/Turkish_s xA=0.360334 xNH=0.499065 t:76.8273 htype: SW i:2 seed:1234567 ./datarepo/Turkish_syntactic_dependency_network.txt
+Result: /Turkish_s xA=0.360334 xNH=[0.499065, ]
+/Turkish_s xA=0.360334 xNH=0.500148 t:78.0302 htype: ER i:2 seed:1234567 ./datarepo/Turkish_syntactic_dependency_network.txt
+Result: /Turkish_s xA=0.360334 xNH=[0.500148, ]
+/Hungarian xA=0.288346 xNH=0.416378 t:344.232 htype: SW i:2 seed:1234567 ./datarepo/Hungarian_syntactic_dependency_network.txt
+Result: /Hungarian xA=0.288346 xNH=[0.416378, ]
+/Hungarian xA=0.288346 xNH=0.500101 t:304.673 htype: ER i:2 seed:1234567 ./datarepo/Hungarian_syntactic_dependency_network.txt
+Result: /Hungarian xA=0.288346 xNH=[0.500101, ]

@@ -528,7 +528,7 @@ void example_parse_results_status(){
 
 void example_estimate_some_manually(){
 
-	for (int i=0; i<2; i++){
+	for (int i=0; i<20; i++){
 		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 1);
 		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 1);
 		monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 1);
