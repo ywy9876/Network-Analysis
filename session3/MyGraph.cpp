@@ -92,17 +92,20 @@ MyGraph::MyGraph(const string file_name) {
 							it = G.find(a);
 							// if the dictionary already contains word a
 							if (it != G.end()) {
-								// if there's already a edge a->b
+								// if there isn't already a edge a->b
 								if (find((it->second).neighbours.begin(), (it->second).neighbours.end(), b) == (it->second).neighbours.end()) {
 									G[a].neighbours.push_back(b); // add b to adjacency list
 									E.push_back(make_pair(a, b)); // add to the edges vector
+									E.push_back(make_pair(b, a));
 									++m;
 								}
 							}
 							else {
 								// since word a does not present in the dictionary, we add it with the edge
 								G[a].neighbours.push_back(b);
+
 								E.push_back(make_pair(a, b));
+								E.push_back(make_pair(b, a));
 								Nodes.push_back(a);
 								nodeIndex[a] =n;
 								indexNode[n] = a;
@@ -115,6 +118,8 @@ MyGraph::MyGraph(const string file_name) {
 							if (it == G.end()) {
 								// since word b does not present in the dictionary, we add it with the edge
 								G[b].neighbours.push_back(a);
+								E.push_back(make_pair(b, a));
+								E.push_back(make_pair(a, b));
 								Nodes.push_back(b);
 								nodeIndex[b] = n;
 								indexNode[n] = b;
@@ -127,8 +132,6 @@ MyGraph::MyGraph(const string file_name) {
 									 G[b].neighbours.push_back(a);
 								}
 							}
-
-
 						}
 						else ++sameNode;
 					}
@@ -435,6 +438,39 @@ void MyGraph::print(){
 
 //};
 
+
+	void MyGraph::calculate_closeness_v3(){
+
+		johnson john = johnson(n, transform_to_edge_vect());
+		john.johnson_all_pairs_dijkstra();
+		//john.printDMatrix();
+
+		int V = john.V;
+		int ** D = john.D;
+
+		double C = 0;
+		int count = 0;
+		//cout << "Closeness centrality: " << endl;
+		for (int idx = 0; idx < Nodes.size(); ++idx){
+			// compute all dij
+			int* d = D[idx];
+			// compute Ci
+			double Ci = 0;
+			for ( int i = 0; i < V ; i++){
+				if (i ==  idx) continue;
+				else if (d[i]== std::numeric_limits<int>::infinity()) continue;
+				double invdij = 1.0/double(d[i]);
+				Ci += invdij;
+			}
+			Ci = Ci /(n - 1);
+			C += Ci;
+		}
+		C = C / n;
+		closeness_centrality = C;
+		john.freeMem();
+		cout << "closeness centrality CWS: " << endl;
+		cout << C << endl;
+	}
 
 	vector<Edge> MyGraph::transform_to_edge_vect(){
 

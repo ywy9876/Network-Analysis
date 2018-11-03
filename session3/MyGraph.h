@@ -16,6 +16,7 @@
 //#include <utility>
 using namespace std;
 
+#include "johnson.h"
 //#include "mydegree.h"
 
 #ifndef MYGRAPH_H_
@@ -73,6 +74,7 @@ public:
 	void sort_Nodes (string sort_type ="shuffle");
 	void print_nodes_vector();
 	void calculate_closeness_v2_bounded(double xAH=0.5);
+	void calculate_closeness_v3();
 	vector<Edge> transform_to_edge_vect();
 
 

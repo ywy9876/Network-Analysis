@@ -53,8 +53,23 @@ typedef std::vector <std::pair<std::string, std::string> > Edges2; // stores all
 
 typedef std::pair < int, int >Edge;
 
-int read_graph2(std::string file_name);
-int testj2(int n, std::vector<Edge> edge_vect);
+class johnson {
+
+public:
+	int** D;
+	int V;
+	std::size_t EE;
+	std::vector<Edge> edge_vect;
+
+
+
+	johnson(int n, std::vector<Edge> edge_vect);
+	//void read_graph2(std::string file_name);
+	void johnson_all_pairs_dijkstra();
+	void printDMatrix();
+	void printEdgeArray();
+	void freeMem ();
+};
 
 
 #endif /* JOHNSON_H_ */

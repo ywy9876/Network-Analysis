@@ -21,7 +21,7 @@ using namespace std;
 #include "MyGraph.h"
 #include "MyER.h"
 #include "MySwitching.h"
-#include "johnson.h"
+
 
  
 
@@ -95,15 +95,63 @@ void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, i
 
 }
 
+map <string, int> read_results_iterations (string file_name){
+	/*
+	 * Reads from the results.txt file
+	 * saves for each sample_htype (Basque_ER, Basque_SW, Arabic_ER, Arabic_SW, ...)
+	 * the last i:XX value which corresponds to the last generatio nof an ER or SW graph with
+	 * the random generator initialized with the seed=1234567
+	 *
+	 * Use: for continuing computation of results, one can launch the montecarlo estimation
+	 * with skiping /discarding the first i random generated numbers
+	 */
+	map <string, int> resultsIndex;
+
+	std::string line;
+	std::ifstream myfile(file_name);
+	if (myfile.is_open()) {
+		while (std::getline(myfile, line)) {
+			// get line
+			std::istringstream iss(line);
+
+			// parse fields: first(name)-a1, htype-a6, and i: -a7
+			//discard line if not correct
+			std::string a1, a2, a3, a4, a5, a6, a7, a8, a9;
+			if (!(iss >> a1 >> a2 >> a3 >> a4 >> a5 >> a6 >> a7 >> a8 >> a9))
+				continue;
+			if (!(a1.substr(0,7).compare("Result:")))
+				continue;
+			string a7b = a7.substr(2,4);
+			if (a7b.length() < 1 )
+				continue;
+
+			int a7c = stoi(a7b);
+			//cout << "saving: " << a1 << " " << a6 << " " << a7c << endl;
+
+			//save into map
+			resultsIndex[a1+"_"+a6]=a7c;
 
 
-void monteCarlo_estimation(string filename, string htype="ER"){
+
+		}
+
+	}
+
+	return resultsIndex;
+}
+
+void monteCarlo_estimation(string filename, string htype="ER", int skip=0, string dijkstra_version="johnson"){
 
 	MyGraph g = MyGraph(filename);
-	g.print();
+	//g.print();
 
 	auto start = std::chrono::high_resolution_clock::now();
-	g.calculate_closeness_v1();
+	if (dijkstra_version == "johnson" && g.m < 500000)
+		g.calculate_closeness_v3();
+	else
+		g.calculate_closeness_v1();
+
+
 	//g.closeness_centrality = 0.269719; // only for Basque lang
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
@@ -112,13 +160,17 @@ void monteCarlo_estimation(string filename, string htype="ER"){
 
 
 	//with alpha= 0.05 -> T >> 1/alph = 20
-	int T = 40;
+	int T = 100;
 	vector<double> xNHs;
 
 	// seed and rng  initialization
 	default_random_engine gen (seed);
+	if (skip>0)
+		gen.discard(skip);
+
 	// a random number between 0 and number of nodes -1 because of the index of vector, no matter the value
 	uniform_int_distribution<int> dist(0, g.E.size() - 1);
+
 	if (htype=="ER")
 		uniform_int_distribution<int> dist(0, g.n-1);
 
@@ -127,7 +179,15 @@ void monteCarlo_estimation(string filename, string htype="ER"){
 		if (htype=="ER"){
 			MyER er = MyER(g, dist, gen);
 			auto start2 = std::chrono::high_resolution_clock::now();
-			er.calculate_closeness_v2_bounded(g.closeness_centrality);
+
+			if (dijkstra_version == "johnson")
+				er.calculate_closeness_v3();
+			else if (dijkstra_version == "bounded")
+				er.calculate_closeness_v2_bounded(g.closeness_centrality);
+			else
+				er.calculate_closeness_v1();
+
+
 			auto finish2 = std::chrono::high_resolution_clock::now();
 			elapsed = finish2 - start2;
 
@@ -142,7 +202,14 @@ void monteCarlo_estimation(string filename, string htype="ER"){
 
 
 			auto start2 = std::chrono::high_resolution_clock::now();
-			sw.calculate_closeness_v2_bounded(g.closeness_centrality);
+			if (dijkstra_version == "johnson")
+				sw.calculate_closeness_v3();
+			else if (dijkstra_version == "bounded")
+				sw.calculate_closeness_v2_bounded(g.closeness_centrality);
+			else
+				sw.calculate_closeness_v1();
+
+
 			auto finish2 = std::chrono::high_resolution_clock::now();
 			elapsed = finish2 - start2;
 
@@ -162,12 +229,12 @@ void monteCarlo_estimation(string filename, string htype="ER"){
 	write_NH_estimation_result(g,xNHs,filename);
 }
 
-void monteCarlo_estimation_with_ER(string filename){
-	return monteCarlo_estimation(filename,"ER");
+void monteCarlo_estimation_with_ER(string filename, int skip=0){
+	return monteCarlo_estimation(filename,"ER", skip);
 }
 
-void monteCarlo_estimation_with_SW(string filename){
-	return monteCarlo_estimation(filename,"SW");
+void monteCarlo_estimation_with_SW(string filename, int skip=0){
+	return monteCarlo_estimation(filename,"SW",skip);
 }
 
 
@@ -181,7 +248,7 @@ void compute_all_x(){
 
 	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
 		cout << "./datarepo/"+*it << endl;
-		read_graph2("./datarepo/"+*it);
+		//read_graph2("./datarepo/"+*it);
 	}
 
 }
@@ -189,9 +256,23 @@ void compute_all_x(){
 void estimate_all_x_with_ER_NH(){
 
 	vector<string> dirfiles = get_directory_files("./datarepo");
-
+	random_shuffle (dirfiles.begin(), dirfiles.end());
 	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
+		cout << endl << endl << " next file " << "./datarepo/"+*it << endl;
 		monteCarlo_estimation_with_ER("./datarepo/"+*it);
+		//monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
+	}
+
+}
+
+void estimate_all_x_with_SW_NH(){
+
+	vector<string> dirfiles = get_directory_files("./datarepo");
+	random_shuffle (dirfiles.begin(), dirfiles.end());
+	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
+		//monteCarlo_estimation_with_SW("./datarepo/"+*it);
+		cout << endl << endl << " next file " << "./datarepo/"+*it << endl;
+		monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
 	}
 
 }
@@ -215,14 +296,19 @@ void example_estimate_basque_with_SW(){
 
 }
 
-void example_estimate_some_manually_with_ER(){
+void example_estimate_some_manually(){
 	monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
-
-	MyGraph g = MyGraph("./datarepo/Arabic_syntactic_dependency_network.txt");
-	//	MyGraph g = MyGraph("./datarepo/Catalan_syntactic_dependency_network.txt");
-	//	MyGraph g = MyGraph("./datarepo/Chinese_syntactic_dependency_network.txt");
-	//	MyGraph g = MyGraph("./datarepo/Czech_syntactic_dependency_network.txt");
-	//	MyGraph g = MyGraph("./datarepo/English_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_SW("./datarepo/Basque_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_ER("./datarepo/Arabic_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_SW("./datarepo/Arabic_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_ER("./datarepo/English_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_SW("./datarepo/English_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_ER("./datarepo/Catalan_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_SW("./datarepo/Catalan_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_ER("./datarepo/Chinese_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_SW("./datarepo/Chinese_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_ER("./datarepo/Czech_syntactic_dependency_network.txt");
+	monteCarlo_estimation_with_SW("./datarepo/Czech_syntactic_dependency_network.txt");
 }
 
 void example_create_graph_1(){
@@ -234,24 +320,33 @@ void example_create_graph_1(){
 	std::chrono::duration<double> elapsed = finish - start;
 	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
 
-	testj2(g.n, g.transform_to_edge_vect());
+//	johnson john = johnson(g.n, g.transform_to_edge_vect());
+//	john.johnson_all_pairs_dijkstra();
+//
+//	g.calculate_closeness_v3(john.D, john.V);
+//
+//	//john.printEdgeArray();
+//	john.printDMatrix();
+//	john.freeMem();
+
+	g.calculate_closeness_v3();
 
 }
 
 void example_create_graph_basque(){
 	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
-
 	//g.print();
-
-	testj2(g.n, g.transform_to_edge_vect());
-
 	auto start = std::chrono::high_resolution_clock::now();
-	g.calculate_closeness_v1();
+	g.calculate_closeness_v3();
 	auto finish = std::chrono::high_resolution_clock::now();
 	std::chrono::duration<double> elapsed = finish - start;
-	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+	cout << "Time spent in calculating closeness v3: " << elapsed.count() << "s" << endl;
 
-
+	start = std::chrono::high_resolution_clock::now();
+	g.calculate_closeness_v1();
+	finish = std::chrono::high_resolution_clock::now();
+	elapsed = finish - start;
+	cout << "Time spent in calculating closenessv1: " << elapsed.count() << "s" << endl;
 }
 
 
@@ -329,18 +424,27 @@ void example_SW(){
 
 int main() {
 
-//	example_estimate_all_x_with_ER(); // too long to execute, better a single file approach
+	map<string,int> resultsIndex = read_results_iterations("./results.txt");
+	cout << "Map created: " << endl;
+	for (std::map<string,int>::iterator it=resultsIndex.begin(); it!=resultsIndex.end(); ++it)
+	    std::cout << it->first << " => " << it->second << '\n';
+
+//estimate_all_x_with_ER_NH(); // too long to execute, better a single file approach
+//estimate_all_x_with_SW_NH();
+
+//example_estimate_some_manually();
 
 //	example_estimate_1_with_ER();
 //	example_estimate_basque_with_ER();
-//	example_SW();
-	//testj();
 //	example_estimate_basque_with_SW();
+
+	//	example_SW();
+	//testj();
 
 //	example_estimate_some_manually_with_ER();
 
-	example_create_graph_1();
-	example_create_graph_basque();
+//	example_create_graph_1();
+//	example_create_graph_basque();
 //	example_create_graph_basque();
 //  example_create_graph_others();
 
