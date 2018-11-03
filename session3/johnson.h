@@ -60,6 +60,7 @@ public:
 	int V;
 	std::size_t EE;
 	std::vector<Edge> edge_vect;
+	Edge* edge_array;
 
 
 

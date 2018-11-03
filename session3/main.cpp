@@ -135,16 +135,40 @@ map <string, int> read_results_iterations (string file_name){
 	return resultsIndex;
 }
 
-void monteCarlo_estimation(string filename, string htype="ER", int skip=0, string dijkstra_version="johnson"){
+int calculate_next_iteration(string filename,string htype,int skip=0){
+	map<string,int> resultsIndex = read_results_iterations("./results.txt");
+	cout << endl << "Results Status: " << endl;
+	for (std::map<string,int>::iterator it=resultsIndex.begin(); it!=resultsIndex.end(); ++it)
+			std::cout << "    " << it->first << " => " << it->second << '\n';
 
-	// calculate the needed number of iterations of the xNH
+	string key = filename.substr(10,10) + "_" + htype;
+	int skip2=skip;
+	try {
+		skip2 = resultsIndex.at(key);
+	} catch (const std::out_of_range& e) {}
+	int skipFinal = max(skip, skip2);
+
+	cout << "Last finished iteration for " << key << " = "  << skipFinal << endl;
+	return skipFinal;
+}
+
+void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int howmany=0 ,string dijkstra_version="johnson"){
+
+	// calculate the needed number of iterations of the hypothesis testing
 	//with alpha= 0.05 -> T >> 1/alph = 20
 	int T = 100;
 	vector<double> xNHs;
 
-	cout << " file:" << filename.substr(0,10) << " skip=" << skip << endl;
-	if (skip+1>T)
+	// calculate the needed iteration for given filename and NH type
+	skip = calculate_next_iteration(filename,htype,skip);
+
+	cout << " file:" << filename.substr(10,10) << " skip=" << skip << " ";
+	if (skip+1>=T)
 		return;
+
+	// step by step execution?
+	if (howmany<1)
+		howmany = T;
 
 	MyGraph g = MyGraph(filename);
 	//g.print();
@@ -152,10 +176,12 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, strin
 	// closeness centrality for real network = xAH
 	auto start = std::chrono::high_resolution_clock::now();
 
-	cout << " Computing closeness_centrality for " << filename << endl;
+	//cout << " Computing closeness_centrality for " << filename << endl;
+	cout << " Closeness_Centrality verification: " << g.m << " >? " << 500000 << endl;
 	if (dijkstra_version == "johnson" && g.m < 500000)
 		g.calculate_closeness_v3();
 	else
+		cout << " Executing alternative version of closeness_centrality";
 		g.calculate_closeness_v1();
 
 	auto finish = std::chrono::high_resolution_clock::now();
@@ -178,7 +204,7 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, strin
 		uniform_int_distribution<int> dist(0, g.n-1);
 
 
-	for (int i=1+skip; i < T ; i++){
+	for (int i=1+skip; i < T && i < skip+1+howmany ; i++){
 		if (htype=="ER"){
 			MyER er = MyER(g, dist, gen);
 			auto start2 = std::chrono::high_resolution_clock::now();
@@ -233,40 +259,11 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, strin
 }
 
 void monteCarlo_estimation_with_ER(string filename, int skip=0){
-	map<string,int> resultsIndex = read_results_iterations("./results.txt");
-	cout << "Map created: " << endl;
-	for (std::map<string,int>::iterator it=resultsIndex.begin(); it!=resultsIndex.end(); ++it)
-		    std::cout << it->first << " => " << it->second << '\n';
-
-
-	string key = filename.substr(10,10) + "_ER";
-	int skip2=skip;
-	try {
-		skip2 = resultsIndex.at(key);
-	} catch (const std::out_of_range& e) {}
-	int skipFinal = max(skip, skip2);
-
-	cout << " results status for " << key << " = "  << skipFinal << endl;
-	return monteCarlo_estimation(filename,"ER", skipFinal);
+	return monteCarlo_estimation(filename,"ER", skip);
 }
 
 void monteCarlo_estimation_with_SW(string filename, int skip=0){
-	map<string,int> resultsIndex = read_results_iterations("./results.txt");
-	cout << "Map created: " << endl;
-		for (std::map<string,int>::iterator it=resultsIndex.begin(); it!=resultsIndex.end(); ++it)
-		    std::cout << it->first << " => " << it->second << '\n';
-
-
-	string key = filename.substr(10,10) + "_SW";
-	int skip2=skip;
-	try {
-		skip2 = resultsIndex.at(key);
-	} catch (const std::out_of_range& e){}
-	int skipFinal = max(skip, skip2);
-
-
-	cout << " results status for " << key << " = "  << skipFinal << endl;
-	return monteCarlo_estimation(filename,"SW",skipFinal);
+	return monteCarlo_estimation(filename,"SW",skip);
 }
 
 
@@ -309,39 +306,8 @@ void estimate_all_x_with_SW_NH(){
 
 }
 
-void example_estimate_all_x_with_ER(){
-	estimate_all_x_with_ER_NH();
-}
 
-void example_estimate_1_with_ER(){
-	monteCarlo_estimation_with_ER("./datarepo/1.txt");
-}
 
-void example_estimate_basque_with_ER(){
-	monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
-}
-
-void example_estimate_basque_with_SW(){
-
-	//monteCarlo_estimation_with_SW("./datarepo/Basque_syntactic_dependency_network.txt");
-	monteCarlo_estimation_with_SW("./datarepo/Arabic_syntactic_dependency_network.txt");
-
-}
-
-void example_estimate_some_manually(){
-	monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
-	monteCarlo_estimation_with_SW("./datarepo/Basque_syntactic_dependency_network.txt");
-	monteCarlo_estimation_with_ER("./datarepo/Arabic_syntactic_dependency_network.txt");
-	monteCarlo_estimation_with_SW("./datarepo/Arabic_syntactic_dependency_network.txt");
-	monteCarlo_estimation_with_ER("./datarepo/Catalan_syntactic_dependency_network.txt");
-	monteCarlo_estimation_with_SW("./datarepo/Catalan_syntactic_dependency_network.txt");
-	monteCarlo_estimation_with_ER("./datarepo/Chinese_syntactic_dependency_network.txt");
-	monteCarlo_estimation_with_SW("./datarepo/Chinese_syntactic_dependency_network.txt");
-	monteCarlo_estimation_with_ER("./datarepo/English_syntactic_dependency_network.txt");
-	monteCarlo_estimation_with_SW("./datarepo/English_syntactic_dependency_network.txt");
-//	monteCarlo_estimation_with_ER("./datarepo/Czech_syntactic_dependency_network.txt");
-//	monteCarlo_estimation_with_SW("./datarepo/Czech_syntactic_dependency_network.txt");
-}
 
 void example_create_graph_1(){
 	MyGraph g = MyGraph("./datarepo/1.txt");
@@ -461,37 +427,42 @@ void example_parse_results_status(){
 	    std::cout << it->first << " => " << it->second << '\n';
 }
 
+
+void example_estimate_some_manually(){
+
+	for (int i=0; i<2; i++){
+		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 1);
+		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 1);
+		monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 1);
+		monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","ER", 0, 1);
+		monteCarlo_estimation("./datarepo/Catalan_syntactic_dependency_network.txt","SW", 0, 1);
+		monteCarlo_estimation("./datarepo/Catalan_syntactic_dependency_network.txt","ER", 0, 1);
+		monteCarlo_estimation("./datarepo/Chinese_syntactic_dependency_network.txt","SW", 0, 1);
+		monteCarlo_estimation("./datarepo/Chinese_syntactic_dependency_network.txt","ER", 0, 1);
+		monteCarlo_estimation("./datarepo/English_syntactic_dependency_network.txt","SW", 0, 1);
+		monteCarlo_estimation("./datarepo/English_syntactic_dependency_network.txt","ER", 0, 1);
+	}
+
+//	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 1);
+//	monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 1);
+
+//	monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_SW("./datarepo/Basque_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_ER("./datarepo/Arabic_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_SW("./datarepo/Arabic_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_ER("./datarepo/Catalan_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_SW("./datarepo/Catalan_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_ER("./datarepo/Chinese_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_SW("./datarepo/Chinese_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_ER("./datarepo/English_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_SW("./datarepo/English_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_ER("./datarepo/Czech_syntactic_dependency_network.txt");
+//	monteCarlo_estimation_with_SW("./datarepo/Czech_syntactic_dependency_network.txt");
+}
+
 int main() {
 
 	example_estimate_some_manually();
-
-
-//estimate_all_x_with_ER_NH(); // too long to execute, better a single file approach
-//estimate_all_x_with_SW_NH();
-
-
-//	example_estimate_1_with_ER();
-//	example_estimate_basque_with_ER();
-//	example_estimate_basque_with_SW();
-
-	//	example_SW();
-	//testj();
-
-//	example_estimate_some_manually_with_ER();
-
-//	example_create_graph_1();
-//	example_create_graph_basque();
-//	example_create_graph_basque();
-//  example_create_graph_others();
-
-// example_johnson_all_pairs();
-
-// example_ER();
-
-	//read_graph2("./datarepo/Basque_syntactic_dependency_network.txt");
-//	read_graph2("./datarepo/1.txt");
-
-//	compute_all_x();
 
 }
 

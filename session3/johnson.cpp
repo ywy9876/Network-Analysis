@@ -110,16 +110,24 @@ johnson::johnson(int n, std::vector<Edge> edge_vect  ){
 		  D[jj]= new int[V];
 	  }
 
+
 	  EE = edge_vect.size();
 	  this->edge_vect = edge_vect;
 
+	  edge_array = new Edge[EE];
+	  for (int jj=0; jj < edge_vect.size(); jj++){
+		  edge_array[jj] = edge_vect[jj];
+		 //cout << edge_array[jj].first << " - " << edge_array[jj].second << endl;
+	  }
+
+
 //	  Edge edge_array[EE] = {};
-//	  for (int jj=0; jj < edge_vect.size(); jj++){
-//		  edge_array[jj] = edge_vect[jj];
+//	  for (int jj=0; jj < 10; jj++){
 //		  cout << edge_array[jj].first << " - " << edge_array[jj].second << endl;
 //	  }
 
-	  //cout <<  EE << " " << edge_vect.size() << endl;
+	  cout << " edge_vect.size()= " << edge_vect.size() << endl;
+	  cout << " edge_array.size() = " << sizeof(&edge_array) / sizeof(Edge) << endl;
 	  //printEdgeArray();
 }
 
@@ -129,16 +137,12 @@ void johnson::johnson_all_pairs_dijkstra(){
   typedef adjacency_list<vecS, vecS, directedS, no_property,
 	property< edge_weight_t, int, property< edge_weight2_t, int > > > Graph;
 
-  Edge edge_array[EE] = {};
-  for (int jj=0; jj < edge_vect.size(); jj++){
-	  edge_array[jj] = edge_vect[jj];
-	 //cout << edge_array[jj].first << " - " << edge_array[jj].second << endl;
-  }
 
-  const std::size_t E = sizeof(edge_array) / sizeof(Edge);
+  //const std::size_t E = sizeof(edge_array) / sizeof(Edge);
+  const std::size_t E =edge_vect.size();
   Graph g(edge_array, edge_array + E, V);
   property_map < Graph, edge_weight_t >::type w = get(edge_weight, g);
-  cout << " E = " << E << endl;
+  cout << " Johnson_Djikstra:  E = " << E << endl;
   int weights[E] = {};
   std::fill_n(weights, E, 1);
   int *wp = weights;
@@ -185,5 +189,7 @@ void johnson::freeMem (){
 		  delete [] D[jj];
 	}
 	delete [] D;
+
+	delete [] edge_array;
 }
 

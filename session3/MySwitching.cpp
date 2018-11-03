@@ -49,7 +49,7 @@
 			v = E[edge1].second;
 			s = E[edge2].first;
 			t = E[edge2].second;
-			cout << u << " " << v  << " " << s << " " << t << endl;
+			//cout << u << " " << v  << " " << s << " " << t << endl;
 			// first, check if the switching produces a loop
 			if (u == t or s == v) {
 				++notValid;
@@ -95,21 +95,21 @@
 			E[edge2] = make_pair(s, v);
 		}
 
-		cout << " now adding edgges to G " << endl;
+		//cout << " now adding edgges to G " << endl;
 		for (auto edge: E) {
 			G[edge.first].neighbours.push_back(edge.second);
 			G[edge.second].neighbours.push_back(edge.first);
 		}
 		cout << "Print Switching model" << endl;
-		for (auto itr = G.begin(); itr != G.end(); ++itr) {
-			cout << itr->first << ": ";
-			for (string neighbour : itr->second.neighbours)
-				cout << neighbour << '\t';
-			cout << endl;
-		}
-		for (auto edge: E) {
-			cout << edge.first << " -> " << edge.second << endl;
-		}
+//		for (auto itr = G.begin(); itr != G.end(); ++itr) {
+//			cout << itr->first << ": ";
+//			for (string neighbour : itr->second.neighbours)
+//				cout << neighbour << '\t';
+//			cout << endl;
+//		}
+//		for (auto edge: E) {
+//			cout << edge.first << " -> " << edge.second << endl;
+//		}
 
 		cout << "Edges: " << E.size() << endl;
 		cout << "QE: " << QE << endl;
