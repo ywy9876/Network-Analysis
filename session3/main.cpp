@@ -95,6 +95,42 @@ void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, i
 
 }
 
+
+map <string, double> read_closeness_from_file (string file_name){
+	 	/*
+	 	 * Reads from the real_closeness.txt file
+	 	 * the values of the closeness for each real network
+	 	 *
+	 	 *Use: avoid recomputing them in subsequent montecarlo estimations
+	 	 */
+	 	map <string, double> closenessIndex;
+
+	 	std::string line;
+	 	std::ifstream myfile(file_name);
+	 	if (myfile.is_open()) {
+	 		while (std::getline(myfile, line)) {
+	 			// get line
+	 			std::istringstream iss(line);
+
+	 			// parse fields: first(name)-a1, htype-a6, and i: -a7
+	 			//discard line if not correct
+	 			std::string a1, a2;
+	 			if (!(iss >> a1 >> a2))
+	 				continue;
+
+	 			if (a2.length() < 1 )
+	 				continue;
+
+	 			double a2b = stod(a2.substr(3,20));
+
+	 			//save into map
+	 			closenessIndex[a1]=a2b;
+	 		}
+	 	}
+	 	return closenessIndex;
+	 }
+
+
 map <string, int> read_results_iterations (string file_name){
 	/*
 	 * Reads from the results.txt file
@@ -175,14 +211,16 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 	//g.print();
 
 	//extract computed closeness from real_closeness.txt file
+	auto start = std::chrono::high_resolution_clock::now();
+
 	map <string, double> closenesses = read_closeness_from_file("./real_closeness.txt");
 	try {
 		string key = filename.substr(10,10);
 		g.closeness_centrality = closenesses.at(key);
+		cout << key << " read closeness_centr from file: " << g.closeness_centrality << endl;
 	} catch (const std::out_of_range& e) {
 
 		//If it is not saved, then we need to compute it
-		auto start = std::chrono::high_resolution_clock::now();
 
 		//cout << " Computing closeness_centrality for " << filename << endl;
 		cout << " Closeness_Centrality verification: " << g.m << " >? " << 500000 << endl;
@@ -212,8 +250,10 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 
 	for (int i=1+skip; i < T && i < skip+1+howmany ; i++){
 		if (htype=="ER"){
-			MyER er = MyER(g, dist, gen);
 			auto start2 = std::chrono::high_resolution_clock::now();
+
+			cout << "Generating ER model network " << i << endl;
+			MyER er = MyER(g, dist, gen);
 
 			if (dijkstra_version == "johnson")
 				er.calculate_closeness_v3();
@@ -224,19 +264,18 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 
 
 			auto finish2 = std::chrono::high_resolution_clock::now();
-			elapsed = finish2 - start2;
+			std::chrono::duration<double> elapsed = finish2 - start2;
 
 			xNHs.push_back(er.closeness_centrality);
 			//cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
 			write_NH_estimation_partial_result(g, er.closeness_centrality,filename,seed,i,elapsed,htype);
 
 		} else{
-			MySwitching sw = MySwitching(g, dist, gen, log(g.E.size()) + 0 );
-
-			cout << "Generated Switching model network " << i << endl;
-
 
 			auto start2 = std::chrono::high_resolution_clock::now();
+			cout << "Generating Switching model network " << i << endl;
+			MySwitching sw = MySwitching(g, dist, gen, log(g.E.size()) + 0 );
+
 			if (dijkstra_version == "johnson")
 				sw.calculate_closeness_v3();
 			else if (dijkstra_version == "bounded")
@@ -246,7 +285,7 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 
 
 			auto finish2 = std::chrono::high_resolution_clock::now();
-			elapsed = finish2 - start2;
+			std::chrono::duration<double> elapsed = finish2 - start2;
 
 			xNHs.push_back(sw.closeness_centrality);
 			//cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
@@ -258,7 +297,7 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 	}
 
 	auto finish3 = std::chrono::high_resolution_clock::now();
-	elapsed = finish3 - start;
+	std::chrono::duration<double> elapsed = finish3 - start;
 	cout << "Total time: " << elapsed.count() << "s" << endl;
 
 	write_NH_estimation_result(g,xNHs,filename);
@@ -272,40 +311,6 @@ void monteCarlo_estimation_with_SW(string filename, int skip=0){
 	return monteCarlo_estimation(filename,"SW",skip);
 }
 
-
- map <string, double> read_closeness_from_file (string file_name){
-	 	/*
-	 	 * Reads from the real_closeness.txt file
-	 	 * the values of the closeness for each real network
-	 	 *
-	 	 *Use: avoid recomputing them in subsequent montecarlo estimations
-	 	 */
-	 	map <string, double> closenessIndex;
-
-	 	std::string line;
-	 	std::ifstream myfile(file_name);
-	 	if (myfile.is_open()) {
-	 		while (std::getline(myfile, line)) {
-	 			// get line
-	 			std::istringstream iss(line);
-
-	 			// parse fields: first(name)-a1, htype-a6, and i: -a7
-	 			//discard line if not correct
-	 			std::string a1, a2;
-	 			if (!(iss >> a1 >> a2))
-	 				continue;
-
-	 			if (a2.length() < 1 )
-	 				continue;
-
-	 			double a2b = stod(a2.substr(3,20));
-
-	 			//save into map
-	 			closenessIndex[a1]=a2b;
-	 		}
-	 	}
-	 	return closenessIndex;
-	 }
 
 void save_closeness_to_file(MyGraph g, string filename){
 
@@ -548,8 +553,8 @@ void example_estimate_some_manually(){
 
 int main() {
 
-	compute_all_real_closeness();
-	//example_estimate_some_manually();
+	//compute_all_real_closeness();
+	example_estimate_some_manually();
 
 }
 
