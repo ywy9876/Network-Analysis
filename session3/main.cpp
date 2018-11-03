@@ -277,7 +277,7 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 
 			auto start2 = std::chrono::high_resolution_clock::now();
 			cout << "Generating Switching model network " << i << endl;
-			MySwitching sw = MySwitching(g, dist, gen, log(g.E.size()) + 0 );
+			MySwitching sw = MySwitching(g, dist, gen, log(g.E.size()) + 50 );
 
 			cout << "m value?:"  << sw.m << endl;
 			cout << " E.size:" << sw.E.size() << endl;
@@ -525,10 +525,16 @@ void example_parse_results_status(){
 	    std::cout << it->first << " => " << it->second << '\n';
 }
 
+void print_graph_to_txt_for_R(){
+	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+	for (auto p : g.E)
+			cout << g.nodeIndex[p.first] << ' ' << g.nodeIndex[p.second] << endl;
+
+}
 
 void example_estimate_some_manually(){
 
-	for (int i=0; i<20; i++){
+	for (int i=0; i<100; i++){
 		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 1);
 		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 1);
 		monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 1);
