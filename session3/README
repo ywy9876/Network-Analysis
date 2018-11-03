@@ -1,1 +1,12 @@
+# Building with optimized code (for boost library and other)
+g++ -O3 -Wall -c -fmessage-length=0 -std=c++11 -fopenmp -I ~/boost_1_68_0 -MMD -MP -MF"main.d" -MT"main.o" -o "main.o" "../main.cpp"
+Finished building: ../main.cpp
+ 
+Building target: session3
+Invoking: GCC C++ Linker
+g++ -fopenmp -o "session3"  ./MyER.o ./MyGraph.o ./MySwitching.o ./boost_tests.o ./johnson.o ./johnson2.o ./main.o ./mydegree.o 
+
+# Parallel execution
 make -j120 -k -f makefile2
+
+
