@@ -533,20 +533,29 @@ void example_estimate_some_manually(){
 		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 1);
 		monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 1);
 		monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","ER", 0, 1);
-		monteCarlo_estimation("./datarepo/Catalan_syntactic_dependency_network.txt","SW", 0, 1);
-		monteCarlo_estimation("./datarepo/Catalan_syntactic_dependency_network.txt","ER", 0, 1);
-		monteCarlo_estimation("./datarepo/Chinese_syntactic_dependency_network.txt","SW", 0, 1);
-		monteCarlo_estimation("./datarepo/Chinese_syntactic_dependency_network.txt","ER", 0, 1);
-		monteCarlo_estimation("./datarepo/English_syntactic_dependency_network.txt","SW", 0, 1);
-		monteCarlo_estimation("./datarepo/English_syntactic_dependency_network.txt","ER", 0, 1);
-		monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 1);
-		monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","ER", 0, 1);
+
+		//under 50s
 		monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 1);
 		monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","ER", 0, 1);
 		monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","SW", 0, 1);
 		monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","ER", 0, 1);
-		monteCarlo_estimation("./datarepo/Hungarian_syntactic_dependency_network.txt","SW", 0, 1);
-		monteCarlo_estimation("./datarepo/Hungarian_syntactic_dependency_network.txt","ER", 0, 1);
+		monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 1);
+		monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","ER", 0, 1);
+
+//		//300s
+//		monteCarlo_estimation("./datarepo/English_syntactic_dependency_network.txt","SW", 0, 1);
+//		monteCarlo_estimation("./datarepo/English_syntactic_dependency_network.txt","ER", 0, 1);
+//		monteCarlo_estimation("./datarepo/Hungarian_syntactic_dependency_network.txt","SW", 0, 1);
+//		monteCarlo_estimation("./datarepo/Hungarian_syntactic_dependency_network.txt","ER", 0, 1);
+//
+//		//440s or more
+//		monteCarlo_estimation("./datarepo/Catalan_syntactic_dependency_network.txt","SW", 0, 1);
+//		monteCarlo_estimation("./datarepo/Catalan_syntactic_dependency_network.txt","ER", 0, 1);
+//		monteCarlo_estimation("./datarepo/Chinese_syntactic_dependency_network.txt","SW", 0, 1);
+//		monteCarlo_estimation("./datarepo/Chinese_syntactic_dependency_network.txt","ER", 0, 1);
+
+
+
 	}
 
 //	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 1);
