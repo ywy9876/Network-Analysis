@@ -73,9 +73,10 @@ public:
 	double closeness_batch (vector<string>& Nodes);
 	void sort_Nodes (string sort_type ="shuffle");
 	void print_nodes_vector();
-	void calculate_closeness_v2_bounded(double xAH=0.5);
+	void calculate_closeness_v2_bounded(double xAH=0.5, string sorttype="incr");
 	void calculate_closeness_v3();
 	vector<Edge> transform_to_edge_vect();
+	int get_degree(string nodename);
 
 
 

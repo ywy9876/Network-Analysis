@@ -30,7 +30,7 @@ public:
 
 	map <string, char> E_ER; // key composed by origin+destination words
 
-	MyER(const MyGraph& g, uniform_int_distribution<int>& dist, default_random_engine& gen);
+	MyER(const MyGraph& g, int newseed);
 	void printER ();
 	void printNodeIndex();
 	void printE_ER();

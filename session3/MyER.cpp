@@ -6,7 +6,7 @@
 //
 //	map <string, char> E_ER; // key composed by origin+destination words
 //
-	MyER::MyER(const MyGraph& g, uniform_int_distribution<int>& dist, default_random_engine& gen) {
+	MyER::MyER(const MyGraph& g, int newseed) {
 
 
 		//G is not initialized
@@ -16,6 +16,17 @@
 		indexNode = g.indexNode; // makes a copy
 		nodeIndex = g.nodeIndex; //makes a copy
 		Nodes = g.Nodes;  // makes a copy
+
+		// a random number between 0 and number of nodes -1 because of the index of vector, no matter the value
+		// Uniform distr. total range
+		int total_range =  g.n-1;
+		uniform_int_distribution<int> dist(0, total_range);
+		// seed and rng  initialization
+		default_random_engine gen (newseed);
+		//if (skip>0)
+		//	gen.discard(skip);
+		//Mersene twister
+		//std::mt19937 gen(newseed); // Mersenne twister MT19937
 
 
 		//cout << " Initialized ER " << endl;

@@ -33,7 +33,7 @@ public:
 	map <string, char> actualEdges; // char to save space
 
 
-	MySwitching(const MyGraph& g, uniform_int_distribution<int>& dist, default_random_engine& gen, int Q);
+	MySwitching(const MyGraph& g, int newseed, int Q);
 
 
 };

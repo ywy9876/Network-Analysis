@@ -7,9 +7,13 @@ class mydegree
 {
 
 public:
-	string myNode;
+	string Node;
+	int degree;
 
-	mydegree(string& Node) :  myNode(Node) { }
+	mydegree(string& Node, int mydegree){
+		this->Node = Node;
+		this->degree = mydegree;
+	}
 
 
 
@@ -20,26 +24,36 @@ public:
 
 struct CompareNode
 {
+
 	bool operator()(mydegree & n1, mydegree & n2)
-	{
-		//cout << " comparing " << n1.myNode << " and " << n2.myNode << " " << endl;
-		if (&n1){
-			if (&(n1.myNode) && n1.myNode.size()>0){
-
-				string s1 = n1.myNode;
-				//cout << s1 << endl;
-				//cout << s1.size() << endl;
-				int val = s1.compare("a");
-				//cout << val << endl;
-				return val;
-
+		{
+			//cout << " comparing " << n1.myNode << " and " << n2.myNode << " " << endl;
+			if (&n1){
+				if (&n2){
+					return n1.degree < n2.degree;
+				}
 			}
-			else return false;
-
+			return false;
 		}
-		else return false;
 
-	}
+
+};
+
+struct CompareNodeDecr
+{
+
+	bool operator()(mydegree & n1, mydegree & n2)
+		{
+			//cout << " comparing " << n1.myNode << " and " << n2.myNode << " " << endl;
+			if (&n1){
+				if (&n2){
+					return n1.degree > n2.degree;
+				}
+			}
+			return false;
+		}
+
+
 };
 
 
@@ -329,21 +343,37 @@ void MyGraph::print(){
 			vector<mydegree> ds;
 			for (int i=0; i< n; i++){
 				//ds[i] = mydegree(Nodes[i]);
-				ds.push_back(mydegree(Nodes[i]));
+				ds.push_back(mydegree(Nodes[i],get_degree(Nodes[i])));
 			}
 			cout << " ds size " << ds.size() << endl;
 	//		for (int i=0; i < ds.size(); i++)
 	//			cout << "| ds[" << i << "]=" << ds[i].myNode << endl;
 			sort(ds.begin(), ds.end()-1, CompareNode() );
+			// copy back to Nodes
+			//cout << Nodes.size() << " " << ds.size() << " comparing Nodes and ds sizes"<< endl;
+			for (int i=0; i < Nodes.size(); i++){
+				Nodes[i] = ds[i].Node;
+				// get sorting output
+				//cout << p.Node << " d=" << p.degree << endl;
+			}
+
+
 		}
-	//	else if (sort_type == "decr")
-	//	{
-	//		vector<degree> ds;
-	//		for (int i=0; i< Nodes.size(); i++){
-	//			ds[i] = degree(Nodes[i],G,E,nodeIndex,indexNode,n,m);
-	//		}
-	//		sort(ds.begin(), ds.end());
-	//	}
+		else if (sort_type == "decr"){
+			vector<mydegree> ds;
+			for (int i=0; i< n; i++){
+				//ds[i] = mydegree(Nodes[i]);
+				ds.push_back(mydegree(Nodes[i],get_degree(Nodes[i])));
+			}
+			sort(ds.begin(), ds.end()-1, CompareNodeDecr() );
+			// copy back to Nodes
+			for (int i=0; i < Nodes.size(); i++){
+				Nodes[i] = ds[i].Node;
+			}
+		}
+		// else // do nothing
+
+
 	}
 
 	void MyGraph::print_nodes_vector(){
@@ -353,7 +383,7 @@ void MyGraph::print(){
 		  std::cout << '\n';
 	}
 
-	void MyGraph::calculate_closeness_v2_bounded(double xAH) {
+	void MyGraph::calculate_closeness_v2_bounded(double xAH, string sorttype) {
 		/*
 		 *  MEAN CLOSENESS CENTRALITY
 		 *  C = 1/N * SUM{i=1,N} Ci
@@ -367,14 +397,10 @@ void MyGraph::print(){
 		 * after each batch we recompute xNHmin and xNHmax and compare with alternative hypothesis
 		 */
 
-
-
-
-		//	sort Nodes -> orign, random, increasing, decreasing
-//		print_nodes_vector();
-		sort_Nodes( "rand");
-//		cout << "after sorting ";
-//		print_nodes_vector();
+		// sorttype: "shuffle", "incr", "decr", other
+		sort_Nodes(sorttype);
+		cout << "after sorting ";
+		print_nodes_vector();
 
 		// Chop Nodes into batches of size...4?8?16?
 		int nodebatch_size = 1000;
@@ -489,4 +515,13 @@ void MyGraph::print(){
 
 		return edge_vect;
 
+	}
+
+	int MyGraph::get_degree(string nodename){
+		map <string, Node >::const_iterator it;
+		it = G.find(nodename);
+		if (it != G.end())
+			return G[nodename].neighbours.size();
+		else
+			return 0;
 	}

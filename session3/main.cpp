@@ -54,7 +54,7 @@ vector <string> get_directory_files(const string& dir) {
 void write_NH_estimation_result(MyGraph g, vector<double> xNHs, string filename){
 
 	ofstream myfile;
-	myfile.open ("results.txt",  ios::out | ios::app );
+	myfile.open ("results_tests.txt",  ios::out | ios::app );
 
 	cout << "Result: " << filename.substr(10,10)   <<  " xA=" << g.closeness_centrality << " xNH=[";
 	myfile << "Result: " << filename.substr(10,10)    <<  " xA=" << g.closeness_centrality << " xNH=[";
@@ -75,21 +75,21 @@ void write_NH_estimation_result(MyGraph g, vector<double> xNHs, string filename)
 
 
 
-void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, int seed, int rng_iteration, chrono::duration<double> timespent, string htype){
+void write_NH_estimation_partial_result(MyGraph g,double xNH, string filename, int newseed, int rng_iteration, chrono::duration<double> timespent, string htype){
 
 	ofstream myfile;
-	myfile.open ("results.txt",  ios::out | ios::app );
+	myfile.open ("results_tests.txt",  ios::out | ios::app );
 
 	cout <<  filename.substr(10,10)   <<  " xA=" << g.closeness_centrality \
 			<< " xNH=" << xNH << " t:" << timespent.count() \
 			<< " htype: " << htype \
-			<< " i:" << rng_iteration << " seed:" << seed \
+			<< " i:" << rng_iteration << " seed:" << newseed \
 			<< " " << filename << endl;
 	myfile << filename.substr(10,10)  <<  " xA=" << g.closeness_centrality \
 			<< " xNH=" << xNH << " t:" << timespent.count() \
 			<< " htype: " << htype \
-			<< " i:" << rng_iteration << " seed:" \
-			<< seed << " " << filename << endl;
+			<< " i:" << rng_iteration << " seed:" << newseed \
+			<< " " << filename << endl;
 
 	myfile.close();
 
@@ -160,19 +160,22 @@ map <string, int> read_results_iterations (string file_name){
 			string a7b = a7.substr(2,4);
 			if (a7b.length() < 1 )
 				continue;
-
+			try {
 			int a7c = stoi(a7b);
 			//cout << "saving: " << a1 << " " << a6 << " " << a7c << endl;
 
 			//save into map
 			resultsIndex[a1+"_"+a6]=a7c;
+			} catch (std::invalid_argument& e){
+				//skip line
+			}
 		}
 	}
 	return resultsIndex;
 }
 
 int calculate_next_iteration(string filename,string htype,int skip=0){
-	map<string,int> resultsIndex = read_results_iterations("./results.txt");
+	map<string,int> resultsIndex = read_results_iterations("./results_tests.txt");
 	cout << endl << "Results Status: " << endl;
 	for (std::map<string,int>::iterator it=resultsIndex.begin(); it!=resultsIndex.end(); ++it)
 			std::cout << "    " << it->first << " => " << it->second << '\n';
@@ -188,7 +191,7 @@ int calculate_next_iteration(string filename,string htype,int skip=0){
 	return skipFinal;
 }
 
-void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int howmany=0 ,string dijkstra_version="johnson"){
+void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int howmany=0 , string dijkstra_version="johnson", string sorttype="incr"){
 
 	// calculate the needed number of iterations of the hypothesis testing
 	//with alpha= 0.05 -> T >> 1/alph = 20
@@ -236,24 +239,20 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 		cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
 	}
 
-	// seed and rng  initialization
 	default_random_engine gen (seed);
-	if (skip>0)
-		gen.discard(skip);
-
-	// a random number between 0 and number of nodes -1 because of the index of vector, no matter the value
-	uniform_int_distribution<int> dist(0, g.E.size() - 1);
-
-	if (htype=="ER")
-		uniform_int_distribution<int> dist(0, g.n-1);
+	uniform_int_distribution<int> dist(0, 1000);
 
 
 	for (int i=1+skip; i < T && i < skip+1+howmany ; i++){
+
+		int newseed = dist(gen);
+
+
 		if (htype=="ER"){
 			auto start2 = std::chrono::high_resolution_clock::now();
 
 			cout << "Generating ER model network " << i << endl;
-			MyER er = MyER(g, dist, gen);
+			MyER er = MyER(g, newseed);
 			cout << "m value?:"  << er.m << endl;
 			cout << " E.size:" << er.E.size() << endl;
 
@@ -262,7 +261,7 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 			else if (dijkstra_version == "total")
 				er.calculate_closeness_v1();
 			else
-				er.calculate_closeness_v2_bounded(g.closeness_centrality);
+				er.calculate_closeness_v2_bounded(g.closeness_centrality, sorttype);
 
 
 
@@ -271,13 +270,13 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 
 			xNHs.push_back(er.closeness_centrality);
 			//cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
-			write_NH_estimation_partial_result(g, er.closeness_centrality,filename,seed,i,elapsed,htype);
+			write_NH_estimation_partial_result(g, er.closeness_centrality,filename,newseed,i,elapsed,htype);
 
 		} else{
 
 			auto start2 = std::chrono::high_resolution_clock::now();
 			cout << "Generating Switching model network " << i << endl;
-			MySwitching sw = MySwitching(g, dist, gen, log(g.E.size()) + 50 );
+			MySwitching sw = MySwitching(g, newseed, log(g.E.size()) + 10 );
 
 			cout << "m value?:"  << sw.m << endl;
 			cout << " E.size:" << sw.E.size() << endl;
@@ -287,7 +286,7 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 			else if (dijkstra_version == "bounded")
 				sw.calculate_closeness_v1();
 			else
-				sw.calculate_closeness_v2_bounded(g.closeness_centrality);
+				sw.calculate_closeness_v2_bounded(g.closeness_centrality, sorttype);
 
 
 
@@ -296,7 +295,7 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 
 			xNHs.push_back(sw.closeness_centrality);
 			//cout << " xNH_" << i << "=" << er.closeness_centrality << " | " << elapsed.count() << endl;
-			write_NH_estimation_partial_result(g, sw.closeness_centrality,filename,seed,i,elapsed,htype);
+			write_NH_estimation_partial_result(g, sw.closeness_centrality,filename,newseed,i,elapsed,htype);
 
 		}
 
@@ -366,189 +365,203 @@ void compute_all_real_closeness(){
 }
 
 
-//-----------------------_EXAMPLES_-----------------------------------------
-
-
-void compute_all_x(){
-
-	vector<string> dirfiles = get_directory_files("./datarepo");
-
-	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
-		cout << "./datarepo/"+*it << endl;
-		//read_graph2("./datarepo/"+*it);
-	}
-
-}
-
-void estimate_all_x_with_ER_NH(){
-
-	vector<string> dirfiles = get_directory_files("./datarepo");
-	random_shuffle (dirfiles.begin(), dirfiles.end());
-	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
-		cout << endl << endl << " next file " << "./datarepo/"+*it << endl;
-		monteCarlo_estimation_with_ER("./datarepo/"+*it);
-		//monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
-	}
-
-}
-
-void estimate_all_x_with_SW_NH(){
-
-	vector<string> dirfiles = get_directory_files("./datarepo");
-	random_shuffle (dirfiles.begin(), dirfiles.end());
-	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
-		//monteCarlo_estimation_with_SW("./datarepo/"+*it);
-		cout << endl << endl << " next file " << "./datarepo/"+*it << endl;
-		monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
-	}
-
-}
-
-
-
-
-void example_create_graph_1(){
-	MyGraph g = MyGraph("./datarepo/1.txt");
-
-	auto start = std::chrono::high_resolution_clock::now();
-	g.calculate_closeness_v1();
-	auto finish = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> elapsed = finish - start;
-	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
-
-//	johnson john = johnson(g.n, g.transform_to_edge_vect());
-//	john.johnson_all_pairs_dijkstra();
+////-----------------------_EXAMPLES_-----------------------------------------
 //
-//	g.calculate_closeness_v3(john.D, john.V);
 //
-//	//john.printEdgeArray();
-//	john.printDMatrix();
-//	john.freeMem();
-
-	g.calculate_closeness_v3();
-
-}
-
-void example_create_graph_basque(){
-	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
-	//g.print();
-	auto start = std::chrono::high_resolution_clock::now();
-	g.calculate_closeness_v3();
-	auto finish = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> elapsed = finish - start;
-	cout << "Time spent in calculating closeness v3: " << elapsed.count() << "s" << endl;
-
-	start = std::chrono::high_resolution_clock::now();
-	g.calculate_closeness_v1();
-	finish = std::chrono::high_resolution_clock::now();
-	elapsed = finish - start;
-	cout << "Time spent in calculating closenessv1: " << elapsed.count() << "s" << endl;
-}
-
-
-void example_create_graph_others(){
-	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
-	//	MyGraph g = MyGraph("./datarepo/Arabic_syntactic_dependency_network.txt");
-	//	MyGraph g = MyGraph("./datarepo/Catalan_syntactic_dependency_network.txt");
-	//	MyGraph g = MyGraph("./datarepo/Chinese_syntactic_dependency_network.txt");
-	//	MyGraph g = MyGraph("./datarepo/Czech_syntactic_dependency_network.txt");
-	//	MyGraph g = MyGraph("./datarepo/English_syntactic_dependency_network.txt");
-
-	//	cout << "Real graph" << endl;
-	//	//g.print();
-	//
-
-	auto start = std::chrono::high_resolution_clock::now();
-	g.calculate_closeness_v1();
-	auto finish = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> elapsed = finish - start;
-	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
-
-}
-
-void example_johson_all_pairs(){
-
-	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
-
-	// some inconsistencies in the example
-	auto start = std::chrono::high_resolution_clock::now();
-	//johnson_allpairs_dijkstra(g);
-	auto finish = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> elapsed = finish - start;
-	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
-
-}
-
-void example_ER(){
-
-	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
-
-	cout << " Creating an ER " << endl;
-	MyER er = MyER(g, dist, gen);
-	//cout << "m: " << er.m << endl;
-	//er.printER();
-	//cout << " Now the print method" << endl;
-	//er.print();
-
-	auto start = std::chrono::high_resolution_clock::now();
-	er.calculate_closeness_v1();
-	auto finish = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> elapsed = finish - start;
-	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
-
-}
-
-
-void example_SW(){
-
-	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
-
-	default_random_engine gen (seed);
-	uniform_int_distribution<int> dist(0, g.E.size() - 1);
-
-	cout << " Creating an SW " << endl;
-	MySwitching sw = MySwitching(g, dist, gen,log(g.E.size()) + 10 );
-	cout << "m: " << sw.m << endl;
-	sw.print();
-
-	auto start = std::chrono::high_resolution_clock::now();
-	sw.calculate_closeness_v1();
-	auto finish = std::chrono::high_resolution_clock::now();
-	std::chrono::duration<double> elapsed = finish - start;
-	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
-}
-
-void example_parse_results_status(){
-	map<string,int> resultsIndex = read_results_iterations("./results.txt");
-	cout << "Map created: " << endl;
-	for (std::map<string,int>::iterator it=resultsIndex.begin(); it!=resultsIndex.end(); ++it)
-	    std::cout << it->first << " => " << it->second << '\n';
-}
-
-void print_graph_to_txt_for_R(){
-	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
-	for (auto p : g.E)
-			cout << g.nodeIndex[p.first] << ' ' << g.nodeIndex[p.second] << endl;
-
-}
+//void compute_all_x(){
+//
+//	vector<string> dirfiles = get_directory_files("./datarepo");
+//
+//	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
+//		cout << "./datarepo/"+*it << endl;
+//		//read_graph2("./datarepo/"+*it);
+//	}
+//
+//}
+//
+//void estimate_all_x_with_ER_NH(){
+//
+//	vector<string> dirfiles = get_directory_files("./datarepo");
+//	random_shuffle (dirfiles.begin(), dirfiles.end());
+//	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
+//		cout << endl << endl << " next file " << "./datarepo/"+*it << endl;
+//		monteCarlo_estimation_with_ER("./datarepo/"+*it);
+//		//monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
+//	}
+//
+//}
+//
+//void estimate_all_x_with_SW_NH(){
+//
+//	vector<string> dirfiles = get_directory_files("./datarepo");
+//	random_shuffle (dirfiles.begin(), dirfiles.end());
+//	for (std::vector<string>::iterator it = dirfiles.begin() ; it != dirfiles.end(); ++it){
+//		//monteCarlo_estimation_with_SW("./datarepo/"+*it);
+//		cout << endl << endl << " next file " << "./datarepo/"+*it << endl;
+//		monteCarlo_estimation_with_ER("./datarepo/Basque_syntactic_dependency_network.txt");
+//	}
+//
+//}
+//
+//
+//
+//
+//void example_create_graph_1(){
+//	MyGraph g = MyGraph("./datarepo/1.txt");
+//
+//	auto start = std::chrono::high_resolution_clock::now();
+//	g.calculate_closeness_v1();
+//	auto finish = std::chrono::high_resolution_clock::now();
+//	std::chrono::duration<double> elapsed = finish - start;
+//	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+//
+////	johnson john = johnson(g.n, g.transform_to_edge_vect());
+////	john.johnson_all_pairs_dijkstra();
+////
+////	g.calculate_closeness_v3(john.D, john.V);
+////
+////	//john.printEdgeArray();
+////	john.printDMatrix();
+////	john.freeMem();
+//
+//	g.calculate_closeness_v3();
+//
+//}
+//
+//void example_create_graph_basque(){
+//	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+//	//g.print();
+//	auto start = std::chrono::high_resolution_clock::now();
+//	g.calculate_closeness_v3();
+//	auto finish = std::chrono::high_resolution_clock::now();
+//	std::chrono::duration<double> elapsed = finish - start;
+//	cout << "Time spent in calculating closeness v3: " << elapsed.count() << "s" << endl;
+//
+//	start = std::chrono::high_resolution_clock::now();
+//	g.calculate_closeness_v1();
+//	finish = std::chrono::high_resolution_clock::now();
+//	elapsed = finish - start;
+//	cout << "Time spent in calculating closenessv1: " << elapsed.count() << "s" << endl;
+//}
+//
+//
+//void example_create_graph_others(){
+//	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+//	//	MyGraph g = MyGraph("./datarepo/Arabic_syntactic_dependency_network.txt");
+//	//	MyGraph g = MyGraph("./datarepo/Catalan_syntactic_dependency_network.txt");
+//	//	MyGraph g = MyGraph("./datarepo/Chinese_syntactic_dependency_network.txt");
+//	//	MyGraph g = MyGraph("./datarepo/Czech_syntactic_dependency_network.txt");
+//	//	MyGraph g = MyGraph("./datarepo/English_syntactic_dependency_network.txt");
+//
+//	//	cout << "Real graph" << endl;
+//	//	//g.print();
+//	//
+//
+//	auto start = std::chrono::high_resolution_clock::now();
+//	g.calculate_closeness_v1();
+//	auto finish = std::chrono::high_resolution_clock::now();
+//	std::chrono::duration<double> elapsed = finish - start;
+//	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+//
+//}
+//
+//void example_johson_all_pairs(){
+//
+//	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+//
+//	// some inconsistencies in the example
+//	auto start = std::chrono::high_resolution_clock::now();
+//	//johnson_allpairs_dijkstra(g);
+//	auto finish = std::chrono::high_resolution_clock::now();
+//	std::chrono::duration<double> elapsed = finish - start;
+//	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+//
+//}
+//
+//void example_ER(){
+//
+////	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+////
+////	cout << " Creating an ER " << endl;
+////	MyER er = MyER(g, dist, gen);
+////	//cout << "m: " << er.m << endl;
+////	//er.printER();
+////	//cout << " Now the print method" << endl;
+////	//er.print();
+////
+////	auto start = std::chrono::high_resolution_clock::now();
+////	er.calculate_closeness_v1();
+////	auto finish = std::chrono::high_resolution_clock::now();
+////	std::chrono::duration<double> elapsed = finish - start;
+////	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+//
+//}
+//
+//
+//void example_SW(){
+//
+////	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+////
+////	default_random_engine gen (seed);
+////	uniform_int_distribution<int> dist(0, g.E.size() - 1);
+////
+////	cout << " Creating an SW " << endl;
+////	MySwitching sw = MySwitching(g, dist, gen,log(g.E.size()) + 10 );
+////	cout << "m: " << sw.m << endl;
+////	sw.print();
+////
+////	auto start = std::chrono::high_resolution_clock::now();
+////	sw.calculate_closeness_v1();
+////	auto finish = std::chrono::high_resolution_clock::now();
+////	std::chrono::duration<double> elapsed = finish - start;
+////	cout << "Time spent in calculating closeness: " << elapsed.count() << "s" << endl;
+//}
+//
+//void example_parse_results_status(){
+//	map<string,int> resultsIndex = read_results_iterations("./results_tests.txt");
+//	cout << "Map created: " << endl;
+//	for (std::map<string,int>::iterator it=resultsIndex.begin(); it!=resultsIndex.end(); ++it)
+//	    std::cout << it->first << " => " << it->second << '\n';
+//}
+//
+//void print_graph_to_txt_for_R(){
+//	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+//	for (auto p : g.E)
+//			cout << g.nodeIndex[p.first] << ' ' << g.nodeIndex[p.second] << endl;
+//
+//}
 
 void example_estimate_some_manually(){
 
+
+	// sorttype: "shuffle", "incr", "decr", other
+//	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 2,"v2","incr");
+//	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 2,"v2","decr");
+//	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 2,"v2","shuffle");
+//	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 2,"v2","original");
+//	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","incr");
+//	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","decr");
+//	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","shuffle");
+	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","other");
+	//	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 100,dist(gen));
+//	monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","SW", 0, 100,dist(gen));
+//	monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 100,dist(gen));
+
 	for (int i=0; i<100; i++){
-		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 1);
-		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 1);
-		monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 1);
-		monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","ER", 0, 1);
 
 		//under 50s
-		monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 1);
-		monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","ER", 0, 1);
-		monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","SW", 0, 1);
-		monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","ER", 0, 1);
-		monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 1);
-		monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","ER", 0, 1);
+//		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 1);
+//		monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 1);
+//		monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 1);
+//		monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","ER", 0, 1);
+//		monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","SW", 0, 1);
+//		monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","ER", 0, 1);
+//		monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 1);
+//		monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","ER", 0, 1);
 
 //		//300s
+//		monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 1);
+//		monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","ER", 0, 1);
 //		monteCarlo_estimation("./datarepo/English_syntactic_dependency_network.txt","SW", 0, 1);
 //		monteCarlo_estimation("./datarepo/English_syntactic_dependency_network.txt","ER", 0, 1);
 //		monteCarlo_estimation("./datarepo/Hungarian_syntactic_dependency_network.txt","SW", 0, 1);
@@ -581,7 +594,21 @@ void example_estimate_some_manually(){
 //	monteCarlo_estimation_with_SW("./datarepo/Czech_syntactic_dependency_network.txt");
 }
 
+void show_degrees(){
+	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
+
+	g.sort_Nodes("decr");
+
+	for (auto p : g.Nodes){
+		cout << p << " degree="<< g.get_degree(p)  << endl;
+	}
+
+	// -> a lot of nodes with degree 1!!!
+}
+
 int main() {
+
+	//show_degrees();
 
 	//compute_all_real_closeness();
 	example_estimate_some_manually();

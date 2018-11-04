@@ -9,7 +9,7 @@
 //	map <string, char> actualEdges; // char to save space
 
 
-	MySwitching::MySwitching(const MyGraph& g, uniform_int_distribution<int>& dist, default_random_engine& gen, int Q){
+	MySwitching::MySwitching(const MyGraph& g, int newseed, int Q){
 
 		//G is not initialized
 		E = g.E;//makes a copy
@@ -19,6 +19,16 @@
 		nodeIndex = g.nodeIndex; //makes a copy
 		Nodes = g.Nodes;  // makes a copy
 
+
+		// Uniform distr. total range
+		int total_range =  E.size() - 1;
+		uniform_int_distribution<int> dist(0, total_range);
+		// seed and rng  initialization
+		default_random_engine gen (newseed);
+		//if (skip>0)
+		//	gen.discard(skip);
+		//Mersene twister
+		//std::mt19937 gen(newseed); // Mersenne twister MT19937
 
 		int m = E.size();
 		//cout << "IN creating Switching, E.size()=" << m << endl;
