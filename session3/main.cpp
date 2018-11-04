@@ -542,7 +542,48 @@ void example_estimate_some_manually(){
 //	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","incr");
 //	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","decr");
 //	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","shuffle");
-	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","other");
+//	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","other");
+
+
+	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 2,"v2","incr");
+	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 2,"v2","shuffle");
+	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 2,"v2","original");
+	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","ER", 0, 2,"v2","incr");
+	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","ER", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","ER", 0, 2,"v2","shuffle");
+	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","ER", 0, 2,"v2","other");
+
+
+	monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","SW", 0, 2,"v2","incr");
+	monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","SW", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","SW", 0, 2,"v2","shuffle");
+	monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","SW", 0, 2,"v2","original");
+	monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","ER", 0, 2,"v2","incr");
+	monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","ER", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","ER", 0, 2,"v2","shuffle");
+	monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","ER", 0, 2,"v2","other");
+
+	monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 2,"v2","incr");
+	monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 2,"v2","shuffle");
+	monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 2,"v2","original");
+	monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","ER", 0, 2,"v2","incr");
+	monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","ER", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","ER", 0, 2,"v2","shuffle");
+	monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","ER", 0, 2,"v2","other");
+
+
+	monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 2,"v2","incr");
+	monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 2,"v2","shuffle");
+	monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","SW", 0, 2,"v2","original");
+	monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","ER", 0, 2,"v2","incr");
+	monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","ER", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","ER", 0, 2,"v2","shuffle");
+	monteCarlo_estimation("./datarepo/Arabic_syntactic_dependency_network.txt","ER", 0, 2,"v2","other");
+
+
 	//	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 100,dist(gen));
 //	monteCarlo_estimation("./datarepo/Turkish_syntactic_dependency_network.txt","SW", 0, 100,dist(gen));
 //	monteCarlo_estimation("./datarepo/Italian_syntactic_dependency_network.txt","SW", 0, 100,dist(gen));
