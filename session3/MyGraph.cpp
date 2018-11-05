@@ -112,7 +112,7 @@ MyGraph::MyGraph(const string file_name) {
 								if (find((it->second).neighbours.begin(), (it->second).neighbours.end(), b) == (it->second).neighbours.end()) {
 									G[a].neighbours.push_back(b); // add b to adjacency list
 									E.push_back(make_pair(a, b)); // add to the edges vector
-									E.push_back(make_pair(b, a));
+									//E.push_back(make_pair(b, a));
 									++m;
 								}
 							}
@@ -122,7 +122,7 @@ MyGraph::MyGraph(const string file_name) {
 								G[a].visited = 0;
 
 								E.push_back(make_pair(a, b));
-								E.push_back(make_pair(b, a));
+								//E.push_back(make_pair(b, a));
 								Nodes.push_back(a);
 								nodeIndex[a] =n;
 								indexNode[n] = a;
@@ -136,13 +136,13 @@ MyGraph::MyGraph(const string file_name) {
 								// since word b does not present in the dictionary, we add it with the edge
 								G[b].neighbours.push_back(a);
 								G[b].visited = 0;
-								E.push_back(make_pair(b, a));
-								E.push_back(make_pair(a, b));
+								//E.push_back(make_pair(b, a));
+								//E.push_back(make_pair(a, b));
 								Nodes.push_back(b);
 								nodeIndex[b] = n;
 								indexNode[n] = b;
 								++n;
-								++m;
+								//++m;
 							}
 							// if the dictionary already contains word b
 							else {

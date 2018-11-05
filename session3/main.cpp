@@ -644,16 +644,29 @@ void example_estimate_some_manually(){
 //	monteCarlo_estimation_with_SW("./datarepo/Czech_syntactic_dependency_network.txt");
 }
 
-void show_degrees(){
-	MyGraph g = MyGraph("./datarepo/Basque_syntactic_dependency_network.txt");
-
+void show_degree(MyGraph g, string filename){
 	g.sort_Nodes("decr");
-
+	ofstream myfile;
+	myfile.open (filename,  ios::out | ios::trunc );
 	for (auto p : g.Nodes){
-		cout << p << " degree="<< g.get_degree(p)  << endl;
+		int deg = g.get_degree(p);
+		myfile << p << " = "<< deg  << endl;
 	}
+	myfile.close();
+}
 
-	// -> a lot of nodes with degree 1!!!
+void debug_SW(string filename="./datarepo/Basque_syntactic_dependency_network.txt") {
+
+	MyGraph g = MyGraph(filename);
+	cout << "myGraph.E: " << g.E.size() << endl;
+	show_degree(g, "original.txt");
+	default_random_engine gen (seed);
+	uniform_int_distribution<int> dist(0, 1000);
+	for (int i=0; i <1 ; i++){
+		int newseed = dist(gen);
+		MySwitching sw = MySwitching(g, newseed, log(g.E.size()) + 10 );
+		show_degree(sw,"sw.txt");
+	}
 }
 
 int main() {
@@ -661,7 +674,7 @@ int main() {
 	//show_degrees();
 
 	//compute_all_real_closeness();
-	example_estimate_some_manually();
-
+	//example_estimate_some_manually();
+	debug_SW();
 }
 

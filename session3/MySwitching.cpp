@@ -12,14 +12,15 @@
 	MySwitching::MySwitching(const MyGraph& g, int newseed, int Q){
 
 		//G is not initialized
-		E = g.E;//makes a copy
+		
+		this->E = g.E;//makes a copy
 		n = g.n;
 		m = g.m;
 		indexNode = g.indexNode; // makes a copy
 		nodeIndex = g.nodeIndex; //makes a copy
 		Nodes = g.Nodes;  // makes a copy
 
-
+		
 		// Uniform distr. total range
 		int total_range =  E.size() - 1;
 		uniform_int_distribution<int> dist(0, total_range);
@@ -31,6 +32,7 @@
 		//std::mt19937 gen(newseed); // Mersenne twister MT19937
 
 		int m = E.size();
+		cout << "ORIGINAL #edges: " << m << endl;
 		//cout << "IN creating Switching, E.size()=" << m << endl;
 		QE = Q * m;
 		this->Q = Q;
@@ -40,8 +42,8 @@
 		string u, v, s, t;
 
 		for (auto edge: E) {
-			actualEdges[edge.first+edge.second] = '1';
-			actualEdges[edge.second+edge.first] = '1';
+			this->actualEdges[edge.first+edge.second] = '1';
+			//actualEdges[edge.second+edge.first] = '1';
 		}
 
 		//cout << "finished updating edges " << endl;
@@ -91,22 +93,22 @@
 			}
 			// all constraints satisfied, modify the vector E and actualEdges
 			// erase u+v, v+u, s+t, t+s from the map actualEdges
-			actualEdges.erase(u+v);
+			this->actualEdges.erase(u+v);
 			//actualEdges.erase(v+u);
-			actualEdges.erase(s+t);
+			this->actualEdges.erase(s+t);
 			//actualEdges.erase(t+s);
 			// add u+t, t+u, s+v, v+s
-			actualEdges[u+t] = '1';
+			this->actualEdges[u+t] = '1';
 			//actualEdges[t+u] = '1';
-			actualEdges[s+v] = '1';
+			this->actualEdges[s+v] = '1';
 			//actualEdges[v+s] = '1';
 			// modify the vector E, uv -> ut, st -> sv
-			E[edge1] = make_pair(u, t);
-			E[edge2] = make_pair(s, v);
+			this->E[edge1] = make_pair(u, t);
+			this->E[edge2] = make_pair(s, v);
 		}
 
 		//cout << " now adding edgges to G " << endl;
-		for (auto edge: E) {
+		for (auto edge: this->E) {
 			G[edge.first].neighbours.push_back(edge.second);
 			G[edge.second].neighbours.push_back(edge.first);
 		}

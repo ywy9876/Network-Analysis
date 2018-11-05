@@ -9,4 +9,4 @@ g++ -fopenmp -o "session3"  ./MyER.o ./MyGraph.o ./MySwitching.o ./johnson.o ./m
 # Parallel execution
 make -j120 -k -f makefile2
 
-
+got pull
