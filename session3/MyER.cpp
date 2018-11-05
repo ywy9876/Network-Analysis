@@ -57,7 +57,7 @@
 					E_ER[destination+origin] = '1';
 
 					E.push_back(std::make_pair(origin,destination));
-					E.push_back(std::make_pair(destination, origin));
+					//E.push_back(std::make_pair(destination, origin));
 					//E_ER.push_back(make_pair(origin, destination)); // add to the edges vector
 					++edgesCreated;
 				}
