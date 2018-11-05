@@ -33,6 +33,7 @@ struct Edge {
 struct Node {
   vector<string> neighbours;
   vector<double> distances;
+  int visited;
 };
 
 typedef map<string, Node > Graph; // unweighted graph
@@ -64,6 +65,7 @@ public:
 	int n;
 	int m; // n for number of nodes, m for number of edges
 	double closeness_centrality;
+	int visitednodes;
 
 	MyGraph();
 	MyGraph(const string file_name);
@@ -71,9 +73,12 @@ public:
 	void dijkstra( int s, vector<double>& d);
 	void calculate_closeness_v1();
 	double closeness_batch (vector<string>& Nodes);
+	double closeness_batch_before_k1 (vector<string>& Nodes, int * foundk1);
+	double closeness_batch_when_k1 (vector<string>& Nodes);
 	void sort_Nodes (string sort_type ="shuffle");
 	void print_nodes_vector();
 	void calculate_closeness_v2_bounded(double xAH=0.5, string sorttype="incr");
+	void calculate_closeness_v2_bounded_k1(double xAH=0.5, string sorttype="incr");
 	void calculate_closeness_v3();
 	vector<Edge> transform_to_edge_vect();
 	int get_degree(string nodename);

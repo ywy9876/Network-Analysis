@@ -260,9 +260,10 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 				er.calculate_closeness_v3();
 			else if (dijkstra_version == "total")
 				er.calculate_closeness_v1();
-			else
-				er.calculate_closeness_v2_bounded(g.closeness_centrality, sorttype);
-
+			else {
+				//er.calculate_closeness_v2_bounded(g.closeness_centrality, sorttype);
+				er.calculate_closeness_v2_bounded_k1(g.closeness_centrality, sorttype);
+			}
 
 
 			auto finish2 = std::chrono::high_resolution_clock::now();
@@ -285,9 +286,10 @@ void monteCarlo_estimation(string filename, string htype="ER", int skip=0, int h
 				sw.calculate_closeness_v3();
 			else if (dijkstra_version == "bounded")
 				sw.calculate_closeness_v1();
-			else
-				sw.calculate_closeness_v2_bounded(g.closeness_centrality, sorttype);
-
+			else {
+				//sw.calculate_closeness_v2_bounded(g.closeness_centrality, sorttype);
+				sw.calculate_closeness_v2_bounded_k1(g.closeness_centrality, sorttype);
+			}
 
 
 			auto finish2 = std::chrono::high_resolution_clock::now();
@@ -544,6 +546,13 @@ void example_estimate_some_manually(){
 //	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","shuffle");
 //	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","other");
 
+	monteCarlo_estimation("./datarepo/2.txt","SW", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/2.txt","ER", 0, 2,"v2","decr");
+
+	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","SW", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Basque_syntactic_dependency_network.txt","ER", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 2,"v2","decr");
+	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","ER", 0, 2,"v2","decr");
 
 	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 2,"v2","incr");
 	monteCarlo_estimation("./datarepo/Greek_syntactic_dependency_network.txt","SW", 0, 2,"v2","decr");

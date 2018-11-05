@@ -73,6 +73,7 @@ MyGraph::MyGraph(){
 		n=0;
 		m=0;
 		closeness_centrality = 0;
+		visitednodes = 0;
 
 	}
 
@@ -88,6 +89,7 @@ MyGraph::MyGraph(const string file_name) {
 				n = 0;
 				m = 0;
 				closeness_centrality = 0;
+				visitednodes = 0;
 
 				// read all lines of the file
 				while (getline(myfile, line)) {
@@ -117,6 +119,7 @@ MyGraph::MyGraph(const string file_name) {
 							else {
 								// since word a does not present in the dictionary, we add it with the edge
 								G[a].neighbours.push_back(b);
+								G[a].visited = 0;
 
 								E.push_back(make_pair(a, b));
 								E.push_back(make_pair(b, a));
@@ -132,6 +135,7 @@ MyGraph::MyGraph(const string file_name) {
 							if (it == G.end()) {
 								// since word b does not present in the dictionary, we add it with the edge
 								G[b].neighbours.push_back(a);
+								G[b].visited = 0;
 								E.push_back(make_pair(b, a));
 								E.push_back(make_pair(a, b));
 								Nodes.push_back(b);
@@ -255,6 +259,8 @@ void MyGraph::print(){
 
 			//cout << " node of which we compute dij's:  " <<  nodeIndex[node] << endl;
 			dijkstra( idx, d);
+			G[Nodes[idx]].visited = 1;
+			visitednodes++;
 
 			// compute Ci
 			double Ci = 0;
@@ -303,16 +309,17 @@ void MyGraph::print(){
 
 		double C = 0;
 		int count = 0;
+		int visitedTotal = 0;
 
 		omp_set_num_threads(8);
-		#pragma omp parallel for firstprivate(count) reduction (+: C)
+		#pragma omp parallel for firstprivate(count) reduction (+: C, visitedTotal)
 		for (int idx = 0; idx < Nodes.size(); ++idx){
 
 			// compute all dij
 			vector<double>& d = G[Nodes[idx]].distances;
-
-			//cout << " node of which we compute dij's:  " <<  nodeIndex[node] << endl;
 			dijkstra(idx, d);
+			G[Nodes[idx]].visited = 1;
+
 
 			// compute Ci
 			double Ci = 0;
@@ -323,9 +330,130 @@ void MyGraph::print(){
 			}
 			Ci = Ci /(n - 1);
 			C += Ci;
+			visitedTotal+=1;
 		}
 		C = C / n;
+		visitednodes+=visitedTotal;
+		return C;
 
+	}
+
+
+
+	double MyGraph::closeness_batch_before_k1 (vector<string>& Nodes, int * foundk1) {
+		/*
+		 *  MEAN CLOSENESS CENTRALITY
+		 *  C = 1/N * SUM{i=1,N} Ci
+		 *
+		 *  Ci = 1 / (N-1) * SUM{j=1,N:i!=j}1/dij
+		 *
+		 *  Nodes contains a subset of all the Nodes of the graph
+		 *  -> this allows to compute with parallelization
+		 *
+		 *  returns C_batch
+		 *  if k=1 are found
+		 *  	it updates Ci but sets foundk1=1
+		 *  	it stops computing distances and updaating ci
+		 *  	then caller can handle that
+		 *
+		*/
+
+		double C = 0;
+		int count = 0;
+		int visitedTotal=0;
+
+
+		omp_set_num_threads(8);
+		#pragma omp parallel for firstprivate(count) reduction (+: C,visitedTotal)
+		for (int idx = 0; idx < Nodes.size(); ++idx){
+
+			if (*foundk1==1)
+				continue;
+
+			//verify node degree
+			int degree = G[Nodes[idx]].neighbours.size();
+			if (degree < 2){
+				*foundk1=1;
+				continue;
+			}
+
+			// compute all dij
+			vector<double>& d = G[Nodes[idx]].distances;
+			dijkstra(idx, d);
+			G[Nodes[idx]].visited = 1;
+
+
+			// compute Ci
+			double Ci = 0;
+			for ( int i = 0; i < d.size() ; i++){
+				if (i ==  idx) continue;
+				double invdij = 1.0/double(d[i]);
+				Ci += invdij;
+			}
+			Ci = Ci /(n - 1);
+			C += Ci;
+			visitedTotal++;
+		}
+		C = C / n;
+		visitednodes+=visitedTotal;
+
+		return C;
+
+	}
+
+	double MyGraph::closeness_batch_when_k1 (vector<string>& Nodes) {
+		/*
+		 *  MEAN CLOSENESS CENTRALITY
+		 *  C = 1/N * SUM{i=1,N} Ci
+		 *
+		 *  Ci = 1 / (N-1) * SUM{j=1,N:i!=j}1/dij
+		 *
+		 *  Nodes contains a subset of all the Nodes of the graph
+		 *  -> this allows to compute with parallelization
+		 *
+		 *  returns C_batch
+		 *
+		*/
+
+		double C = 0;
+		int count = 0;
+		int visitedTotal =0;
+
+		omp_set_num_threads(8);
+		#pragma omp parallel for firstprivate(count) reduction (+: C,visitedTotal)
+		for (int idx = 0; idx < Nodes.size(); ++idx){
+
+			// compute all dij
+			vector<double>& d = G[Nodes[idx]].distances;
+			// all d contain only one element,
+			// before computing dijkstra, make sure this element is already "visited
+			int skip=0;
+			for (int jj=0; jj<d.size(); jj++){
+				string nodestring = G[Nodes[jj]].neighbours[jj];
+				if (G[nodestring].visited == 0)
+					skip = 1;
+			}
+
+			if (skip==1)
+				continue;
+
+			dijkstra(idx, d);
+			G[Nodes[idx]].visited = 1;
+
+
+			// compute Ci
+			double Ci = 0;
+			for ( int i = 0; i < d.size() ; i++){
+				if (i ==  idx) continue;
+				double invdij = 1.0/double(d[i]);
+				Ci += invdij;
+			}
+			Ci = Ci /(n - 1);
+			C += Ci;
+			visitedTotal++;
+		}
+		C = C / n;
+		visitednodes+=visitedTotal;
 		return C;
 
 	}
@@ -333,9 +461,19 @@ void MyGraph::print(){
 
 
 
-
-
 	void MyGraph::sort_Nodes (string sort_type){
+
+		cout << "              SORT: sort_type " << sort_type << " , " <<  endl;
+		if (sort_type == "incr")
+			cout << "              " << "sort_type == incr" << endl;
+		else if (sort_type == "decr")
+			cout << "              " << "sort_type == decr" << endl;
+		else if (sort_type.compare("incr"))
+			cout << "              " << "sort_type.compare(incr)" << endl;
+		else if (sort_type.compare("decr"))
+			cout << "              " << "sort_type.compare(decr)" << endl;
+		else
+			cout << "              " << "sort_type == no working" << endl;
 
 		if (sort_type == "shuffle")
 			random_shuffle (Nodes.begin(), Nodes.end());
@@ -424,6 +562,11 @@ void MyGraph::print(){
 
 			// 		compute Cbi/N;
 			// 		Cmin += Cbi/N;
+			if (i < 1 ){
+				for (int idx = 0; idx < 3; ++idx)
+					cout << " node of which we compute dij's:  " <<  Nodesbatch[idx] << endl;
+
+			}
 			Cmin += closeness_batch( Nodesbatch);
 
 			// 		M += nodebatch_size;
@@ -463,7 +606,174 @@ void MyGraph::print(){
 	}
 
 
-//};
+	void MyGraph::calculate_closeness_v2_bounded_k1(double xAH, string sorttype) {
+		/*
+		 *  MEAN CLOSENESS CENTRALITY
+		 *  C = 1/N * SUM{i=1,N} Ci
+		 *
+		 *  Ci = 1 / (N-1) * SUM{j=1,N:i!=j}1/dij
+		 *
+		 *  dii=0
+		 *
+		 * bounded computation by xNHmin and xNHmax
+		 * parallelization by batches (of randomized nodes!)
+		 * after each batch we recompute xNHmin and xNHmax and compare with alternative hypothesis
+		 */
+
+		// sorttype: "shuffle", "incr", "decr", other
+		sort_Nodes(sorttype);
+		cout << "after sorting ";
+		print_nodes_vector();
+
+		// Chop Nodes into batches of size...4?8?16?
+		int nodebatch_size = min(n,1000);
+
+		// Boolean deecistion variables
+		int nh_over_ah  = 0;
+		int nh_under_ah = 0;
+
+		double C=0;
+		double Cmax=0;
+		double Cmin=0;
+		int M=0;
+
+		//for second loop (for when k=1)
+		int lasti=0;
+		int dok1loop=0;
+		int foundk1=0;
+
+
+
+		cout << "now the first loop:" << n - nodebatch_size + 1 <<  " n=" << n << " nodebatch_size=" << nodebatch_size  << " Nodes.size()=" << Nodes.size() << " slice(" << 0 << "," << 0+nodebatch_size-1 << ")" << endl;
+		// for Nodebatch:
+		for (int i=0; i < n  - nodebatch_size + 1 && foundk1==0; i+=nodebatch_size-1){
+			// preparate NodeBatch
+
+			vector<string> Nodesbatch = slice(Nodes,i, i+nodebatch_size-1);
+			//vector<string>& NodesbatchRef = Nodesbatch;
+			cout << " i=" << i << " n=" << n << " nodebatch_size=" << nodebatch_size << " slice(" << i << "," << i+nodebatch_size-1 << ")" << endl;
+
+			// 		compute Cbi/N;
+			// 		Cmin += Cbi/N;
+			if (i < 1 ){
+				for (int idx = 0; idx < Nodesbatch.size() && idx < 3; ++idx)
+					cout << " node of which we compute dij's:  " <<  Nodesbatch[idx] << endl;
+			}
+
+			Cmin += closeness_batch_before_k1( Nodesbatch, &foundk1);
+
+			// 		M += nodebatch_size;
+			M += nodebatch_size;
+			// 		Cmax = Cmin + 1 - M/N;
+			Cmax = Cmin + 1.0 - double(M)/double(n);
+			// 		C = Cmin
+			C = Cmin;
+			//
+			cout << " Cmin=" << Cmin << " Cmax=" << Cmax << " foundk1= "<< foundk1 <<  endl;
+
+
+			// foundk1, handle this situation, separate nodes ith k=1 from batch, then compute next steps
+			if (foundk1==0){
+				// 		M += nodebatch_size;
+				M += nodebatch_size;
+				// 		Cmax = Cmin + 1 - M/N;
+				Cmax = Cmin + 1.0 - double(M)/double(n);
+				// 		C = Cmin
+				C = Cmin;
+				//
+				if ( Cmin >= xAH){
+					nh_over_ah = 1;
+					//cout << " xNH over xAH? " << nh_over_ah << endl;
+					break;
+				}else if ( Cmax <= xAH ){
+					nh_under_ah = 1;
+					C = Cmax;
+					//cout << " xNH under xAH? " << nh_under_ah << endl;
+					break;
+				}
+
+			} else {
+				cout << "found node with degree 1! : changing to new loop" << endl;
+				int newbatchsize = 0;
+
+				// skipping the nodes with k>1 in this batch?
+//				for (int j=0; j< Nodesbatch.size(); j++){
+//					if (G[Nodesbatch[j]].neighbours.size()>=2)
+//						newbatchsize++;
+//					else {
+//						// we save the position of first node with degree k=1
+//						lasti=j;
+//					}
+//				}
+				M += newbatchsize;
+				// 		Cmax = Cmin + 1 - M/N;
+				Cmax = Cmin + 1.0 - double(M)/double(n);
+				// 		C = Cmin
+				C = Cmin;
+				//
+				if ( Cmin >= xAH){
+					nh_over_ah = 1;
+					//cout << " xNH over xAH? " << nh_over_ah << endl;
+					break;
+				}else if ( Cmax <= xAH ){
+					nh_under_ah = 1;
+					C = Cmax;
+					//cout << " xNH under xAH? " << nh_under_ah << endl;
+					break;
+				} else {
+					//we then do the loop with k=1
+					dok1loop=1;
+					break;
+				}
+			}
+		}
+
+		if (foundk1==1){
+			// k=1 loop
+			// prepare a new vector of Nodes, where we will be removing each node once it is visited
+			vector<string> NodesK1 = slice(Nodes,lasti, Nodes.size());
+
+			// for Nodebatch:
+			while ( visitednodes < G.size()){
+				for (int i=lasti; i < n - nodebatch_size + 1; i+=nodebatch_size){
+					// preparate NodeBatch
+					vector<string> Nodesbatch = slice(NodesK1,i, i+nodebatch_size);
+					vector<string>& NodesbatchRef = Nodesbatch;
+
+					// 		compute Cbi/N;
+					// 		Cmin += Cbi/N;
+					if (i < 1 ){
+						for (int idx = 0; idx < 3; ++idx)
+							cout << " node with k=1 of which we compute dij's:  " <<  Nodesbatch[idx] << endl;
+					}
+					Cmin += closeness_batch_when_k1( Nodesbatch);
+
+					//remove nodes from NodesK1 , very ineficient..AVOID
+					// repeat the loop in a while loop while visitednodes < G.size()
+
+					// 		M += nodebatch_size;
+					M += nodebatch_size;
+					// 		Cmax = Cmin + 1 - M/N;
+					Cmax = Cmin + 1.0 - double(M)/double(n);
+					// 		C = Cmin
+					C = Cmin;
+					//
+					if ( Cmin >= xAH){
+						nh_over_ah = 1;
+						//cout << " xNH over xAH? " << nh_over_ah << endl;
+						break;
+					}else if ( Cmax <= xAH ){
+						nh_under_ah = 1;
+						C = Cmax;
+						//cout << " xNH under xAH? " << nh_under_ah << endl;
+						break;
+					}
+
+				}
+			}
+		}
+		closeness_centrality = C;
+	}
 
 
 	void MyGraph::calculate_closeness_v3(){
@@ -491,6 +801,8 @@ void MyGraph::print(){
 			}
 			Ci = Ci /(n - 1);
 			C += Ci;
+			G[Nodes[idx]].visited = 1;
+			visitednodes++;
 		}
 		C = C / n;
 		closeness_centrality = C;
